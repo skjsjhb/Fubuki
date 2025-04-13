@@ -7,7 +7,7 @@ import java.util.concurrent.CompletableFuture
  */
 object ServerMixinReceivers {
     /**
-     * Completed when all worlds are loaded.
+     * Completed with the server instance when all worlds are loaded.
      */
     val postWorldFuture = CompletableFuture<Any?>()
 }

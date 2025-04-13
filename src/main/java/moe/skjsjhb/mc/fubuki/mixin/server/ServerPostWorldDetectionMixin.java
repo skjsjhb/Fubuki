@@ -9,9 +9,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftServer.class)
-public class ServerPostWorldDetectionMixin {
+public abstract class ServerPostWorldDetectionMixin {
     @Inject(method = "loadWorld", at = @At(value = "RETURN"))
     private void onAllWorldsLoaded(CallbackInfo ci) {
-        ServerMixinReceivers.INSTANCE.getPostWorldFuture().complete(null);
+        ServerMixinReceivers.INSTANCE.getPostWorldFuture().complete(this);
     }
 }

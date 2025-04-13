@@ -3,7 +3,7 @@
 > Well, not. Not even close.
 
 > [!CAUTION]
-> Fubuki is at a very early stage and does not really do anything more than execute the plugin lifecycle methods.  
+> Fubuki is at a very early stage and does not really do anything more than executing the plugin lifecycle methods.  
 > Most APIs are not implemented and events won't be fired.  
 > In short, it **DOES NOT WORK** at all.  
 > <br/>
@@ -23,14 +23,13 @@
 
 </details>
 
-- **Plugin Loading** :o:
+- **Plugin Loading** :ballot_box_with_check:
 
   Limitations:
 
   - Plugin API version compatibility is not checked.
   - Class bytecode transformation is not implemented.
   - Legacy plugins are not supported.
-  - Plugin tasks and services are not removed upon stopping.
 
   Caveats:
 

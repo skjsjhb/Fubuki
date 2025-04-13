@@ -12,8 +12,12 @@ class ExamplePlugin : JavaPlugin() {
         saveDefaultConfig()
 
         if (config.getBoolean("enabled")) {
-            logger.info("Stopping server!")
+            logger.info("I'm stopping the server!")
             server.shutdown()
         }
+    }
+
+    override fun onDisable() {
+        logger.info("OK I'm disabling.")
     }
 }

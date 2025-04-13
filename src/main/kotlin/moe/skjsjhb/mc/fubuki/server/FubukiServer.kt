@@ -1,5 +1,7 @@
 package moe.skjsjhb.mc.fubuki.server
 
+import moe.skjsjhb.mc.fubuki.ipc.FubukiMessenger
+import moe.skjsjhb.mc.fubuki.services.FubukiServicesManager
 import moe.skjsjhb.mc.fubuki.util.Slf4jBridgedLogger
 import moe.skjsjhb.mc.fubuki.util.Versions
 import net.minecraft.server.MinecraftServer
@@ -51,6 +53,8 @@ class FubukiServer(
     private val commandMap = SimpleCommandMap(this)
     private val pluginManager = SimplePluginManager(this, commandMap)
     private val scheduler = FubukiScheduler(nativeServer)
+    private val servicesManager = FubukiServicesManager()
+    private val messenger = FubukiMessenger()
 
     override fun sendPluginMessage(source: Plugin, channel: String, message: ByteArray) {
         TODO("Not yet implemented")
@@ -234,12 +238,11 @@ class FubukiServer(
 
     override fun getScheduler(): BukkitScheduler = scheduler
 
-    override fun getServicesManager(): ServicesManager {
-        TODO("Not yet implemented")
-    }
+    override fun getServicesManager(): ServicesManager = servicesManager
 
     override fun getWorlds(): MutableList<World> {
-        TODO("Not yet implemented")
+        // TODO implement worlds
+        return mutableListOf()
     }
 
     override fun createWorld(creator: WorldCreator): World? {
@@ -478,9 +481,7 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    override fun getMessenger(): Messenger {
-        TODO("Not yet implemented")
-    }
+    override fun getMessenger(): Messenger = messenger
 
     override fun getHelpMap(): HelpMap {
         TODO("Not yet implemented")

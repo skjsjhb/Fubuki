@@ -3,7 +3,8 @@
     "package": "moe.skjsjhb.mc.fubuki.mixin",
     "compatibilityLevel": "JAVA_21",
     "mixins": [
-        "server.ServerPostWorldDetectionMixin"
+        "server.ServerPostWorldDetectionMixin",
+        "server.ServerTickInjectorMixin"
     ],
     "injectors": {
         "defaultRequire": 1

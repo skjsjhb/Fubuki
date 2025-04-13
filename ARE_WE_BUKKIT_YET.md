@@ -40,11 +40,12 @@
 
 - **Plugin Resource Files** :white_check_mark:
 
-- **Task Scheduling**: :hammer:
-
-  - We've made it possible to run tasks on the main thread, but the API is not implemented yet.
-  - Tick counting system may return inaccurate results.
+- **Task Scheduling**: :o:
+  - Sync tasks scheduling is implemented.
+  - We've made it possible to run interval/delayed tasks, but the API is not implemented yet.
   - We've encountered issues with `BukkitWorker` and we're working around them.
+  - Tasks are not associated with plugins and cannot be cancelled.
+  - Suboptimal task polling system.
 
 - **Server Operations** :hammer:
 

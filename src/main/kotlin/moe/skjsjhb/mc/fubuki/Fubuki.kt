@@ -1,6 +1,7 @@
 package moe.skjsjhb.mc.fubuki
 
 import moe.skjsjhb.mc.fubuki.pm.PluginLifecycleManager
+import moe.skjsjhb.mc.fubuki.schedule.ServerThreadExecutor
 import moe.skjsjhb.mc.fubuki.server.FubukiServer
 import moe.skjsjhb.mc.fubuki.server.ServerMixinReceivers
 import net.fabricmc.api.ModInitializer
@@ -15,6 +16,8 @@ object Fubuki : ModInitializer {
 
     override fun onInitialize() {
         logger.info("This is Fubuki, a Bukkit API translator for Fabric.")
+
+        ServerThreadExecutor.init()
 
         ServerLifecycleEvents.SERVER_STARTING.register {
             val fs = FubukiServer(it)

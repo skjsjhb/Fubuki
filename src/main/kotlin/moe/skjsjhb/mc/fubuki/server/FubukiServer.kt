@@ -1,6 +1,7 @@
 package moe.skjsjhb.mc.fubuki.server
 
 import moe.skjsjhb.mc.fubuki.ipc.FubukiMessenger
+import moe.skjsjhb.mc.fubuki.schedule.FubukiScheduler
 import moe.skjsjhb.mc.fubuki.services.FubukiServicesManager
 import moe.skjsjhb.mc.fubuki.util.Slf4jBridgedLogger
 import moe.skjsjhb.mc.fubuki.util.Versions

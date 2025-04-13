@@ -13,7 +13,10 @@ class ExamplePlugin : JavaPlugin() {
 
         if (config.getBoolean("enabled")) {
             logger.info("I'm stopping the server!")
-            server.shutdown()
+            server.scheduler.runTask(this, Runnable {
+                assert(server.isPrimaryThread) { "I suppose I should be on the main thread!" }
+                server.shutdown()
+            })
         }
     }
 

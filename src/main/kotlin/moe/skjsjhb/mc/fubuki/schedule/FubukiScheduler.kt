@@ -1,4 +1,4 @@
-package moe.skjsjhb.mc.fubuki.server
+package moe.skjsjhb.mc.fubuki.schedule
 
 import net.minecraft.server.MinecraftServer
 import org.bukkit.plugin.Plugin
@@ -8,9 +8,67 @@ import org.bukkit.scheduler.BukkitTask
 import org.bukkit.scheduler.BukkitWorker
 import java.util.concurrent.Callable
 import java.util.concurrent.Future
+import java.util.concurrent.PriorityBlockingQueue
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 
-class FubukiScheduler(private val server: MinecraftServer) : BukkitScheduler {
+class FubukiScheduler(nativeServer: MinecraftServer) : BukkitScheduler {
+    private val serverExecutor = ServerThreadExecutor(nativeServer)
+    private val ticks = AtomicInteger(0)
+    private val tasksQueue = PriorityBlockingQueue<FubukiTask>()
+
+    init {
+        scheduleTickCounter()
+        scheduleTaskPoller()
+    }
+
+    /**
+     * Gets the current tick of the server.
+     */
+    fun getTicks(): Int = ticks.get()
+
+    /**
+     * Adds an auto-renewal core task to count server ticks.
+     */
+    private fun scheduleTickCounter() {
+        val tickCounter = object : Runnable {
+            override fun run() {
+                ticks.incrementAndGet()
+                serverExecutor.execute(this)
+            }
+        }
+
+        serverExecutor.execute(tickCounter)
+    }
+
+    /**
+     * Adds an auto-renewal core task to poll the task queue.
+     */
+    private fun scheduleTaskPoller() {
+        val taskPoller = object : Runnable {
+            override fun run() {
+                while (!tasksQueue.isEmpty()) {
+                    val task = tasksQueue.poll() ?: break
+                    if (task.nextTimeToRun.get() <= ticks.get()) {
+                        task.run()
+                    } else {
+                        break
+                    }
+                }
+                serverExecutor.execute(this)
+            }
+        }
+
+        serverExecutor.execute(taskPoller)
+    }
+
+    /**
+     * Adds a task to the queue.
+     */
+    internal fun addTask(task: FubukiTask) {
+        tasksQueue.offer(task)
+    }
+
     override fun scheduleSyncDelayedTask(plugin: Plugin, task: Runnable, delay: Long): Int {
         TODO("Not yet implemented")
     }
@@ -76,7 +134,10 @@ class FubukiScheduler(private val server: MinecraftServer) : BukkitScheduler {
     }
 
     override fun runTask(plugin: Plugin, task: Runnable): BukkitTask {
-        TODO("Not yet implemented")
+        val ts = FubukiTask(task, plugin, this, true)
+        addTask(ts)
+        return ts
+        // TODO associate task with plugin
     }
 
     override fun runTask(plugin: Plugin, task: Consumer<in BukkitTask>) {

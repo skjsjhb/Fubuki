@@ -46,6 +46,7 @@ import java.util.logging.Logger
 /**
  * Fubuki implementation of [Server].
  */
+@Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
 class FubukiServer(
     private val nativeServer: MinecraftServer
 ) : Server {
@@ -543,7 +544,7 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    override fun isPrimaryThread(): Boolean = Thread.currentThread() == nativeServer.thread
+    override fun isPrimaryThread(): Boolean = nativeServer.isOnThread
 
     override fun getMotd(): String = nativeServer.serverMotd
 
@@ -688,7 +689,6 @@ class FubukiServer(
     override fun <T : Keyed?> getRegistry(tClass: Class<T>): Registry<T>? {
         TODO("Not yet implemented")
     }
-
 
     private val unsafeValues = FubukiUnsafeValues()
 

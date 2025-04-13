@@ -66,16 +66,20 @@ class PluginLifecycleManager(private val pluginManager: PluginManager) {
     }
 
     private fun updatePluginLoadOrder(p: Plugin): PluginLoadOrder {
-        return pluginLoadOrders.computeIfAbsent(p.name) {
-            // Temporarily set it to the stage in the description to prevent circular dependency
-            pluginLoadOrders[p.name] = p.description.load
-            val loadAtStartup = p.description.load == PluginLoadOrder.STARTUP &&
-                    p.description.depend.plus(p.description.softDepend)
-                        .mapNotNull { getRealPlugin(it) }
-                        .all { updatePluginLoadOrder(it) == PluginLoadOrder.STARTUP }
+        pluginLoadOrders[p.name]?.let { return it }
 
-            if (loadAtStartup) PluginLoadOrder.STARTUP else PluginLoadOrder.POSTWORLD
-        }
+        // Set an initial value to prevent recursive calls
+        pluginLoadOrders[p.name] = p.description.load
+
+        val loadAtStartup = p.description.load == PluginLoadOrder.STARTUP &&
+                p.description.depend.plus(p.description.softDepend)
+                    .mapNotNull { getRealPlugin(it) }
+                    .all { updatePluginLoadOrder(it) == PluginLoadOrder.STARTUP }
+
+        val newOrder = if (loadAtStartup) PluginLoadOrder.STARTUP else PluginLoadOrder.POSTWORLD
+        pluginLoadOrders[p.name] = newOrder
+
+        return newOrder
     }
 
     /**

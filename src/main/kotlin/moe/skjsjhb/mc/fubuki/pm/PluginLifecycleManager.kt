@@ -27,7 +27,9 @@ class PluginLifecycleManager(private val pluginManager: PluginManager) {
             logger.info("- {} ({})", it.name, it.description.version)
             patchPluginLogger(it)
         }
+    }
 
+    fun onStartup() {
         plugins.values
             .filter { pluginLoadOrders[it.name] == PluginLoadOrder.STARTUP }
             .forEach {

@@ -12,6 +12,7 @@ import java.util.concurrent.PriorityBlockingQueue
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 
+@Suppress("OVERRIDE_DEPRECATION")
 class FubukiScheduler(nativeServer: MinecraftServer) : BukkitScheduler {
     private val serverExecutor = ServerThreadExecutor(nativeServer)
     private val ticks = AtomicInteger(0)

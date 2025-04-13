@@ -1,6 +1,7 @@
 package moe.skjsjhb.mc.fubuki.server
 
 import moe.skjsjhb.mc.fubuki.ipc.FubukiMessenger
+import moe.skjsjhb.mc.fubuki.pm.PluginLifecycleManager
 import moe.skjsjhb.mc.fubuki.schedule.FubukiScheduler
 import moe.skjsjhb.mc.fubuki.services.FubukiServicesManager
 import moe.skjsjhb.mc.fubuki.util.Slf4jBridgedLogger
@@ -57,6 +58,8 @@ class FubukiServer(
     private val scheduler = FubukiScheduler(nativeServer)
     private val servicesManager = FubukiServicesManager()
     private val messenger = FubukiMessenger()
+
+    val pluginLifecycleManager = PluginLifecycleManager(pluginManager)
 
     override fun sendPluginMessage(source: Plugin, channel: String, message: ByteArray) {
         TODO("Not yet implemented")

@@ -1,0 +1,34 @@
+{
+    "schemaVersion": 1,
+    "id": "fubuki",
+    "version": "1.21.5",
+    "name": "Fubuki",
+    "description": "Bukkit API translator for Fabric.",
+    "authors": [
+        "skjsjhb"
+    ],
+    "contact": {
+        "sources": "https://github.com/skjsjhb/Fubuki"
+    },
+    "license": "GPL-3.0-or-later",
+    "icon": "assets/fubuki/icon.png",
+    "environment": "server",
+    "entrypoints": {
+        "main": [
+            {
+                "value": "moe.skjsjhb.mc.fubuki.Fubuki",
+                "adapter": "kotlin"
+            }
+        ]
+    },
+    "mixins": [
+        "fubuki.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.16.13",
+        "minecraft": "~1.21.5",
+        "java": ">=21",
+        "fabric-api": "*",
+        "fabric-language-kotlin": "*"
+    }
+}

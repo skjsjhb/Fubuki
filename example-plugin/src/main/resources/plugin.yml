@@ -1,0 +1,4 @@
+name: FubukiExample
+main: moe.skjsjhb.mc.fubuki.example.plugin.ExamplePlugin
+version: 1.0
+api-version: 1.21

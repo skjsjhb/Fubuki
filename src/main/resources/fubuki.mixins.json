@@ -1,0 +1,11 @@
+{
+    "required": true,
+    "package": "moe.skjsjhb.mc.fubuki.mixin",
+    "compatibilityLevel": "JAVA_21",
+    "mixins": [
+        "server.ServerPostWorldDetectionMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

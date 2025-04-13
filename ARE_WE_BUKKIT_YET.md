@@ -23,6 +23,8 @@
 
 </details>
 
+---
+
 - **Plugin Loading** :ballot_box_with_check:
 
   Limitations:
@@ -38,6 +40,14 @@
 
 - **Plugin Resource Files** :white_check_mark:
 
+- **Task Scheduling**: :hammer:
+
+  - We've made it possible to run tasks on the main thread, but the API is not implemented yet.
+  - Tick counting system may return inaccurate results.
+  - We've encountered issues with `BukkitWorker` and we're working around them.
+
 - **Server Operations** :hammer:
+
+  - Only server shutdown is supported.
 
 ...For all other systems it **DOES NOT WORK**. 

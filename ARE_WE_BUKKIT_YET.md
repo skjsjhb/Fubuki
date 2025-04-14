@@ -26,27 +26,28 @@
 ---
 
 - **Plugin Loading** :ballot_box_with_check:
-
+  
   Limitations:
-
+  
   - Plugin API version compatibility is not checked.
   - Class bytecode transformation is not implemented.
-  - Legacy plugins are not supported.
-
+  
   Caveats:
-
+  
   - Kotlin standard library is bundled with Fubuki, see the `fabric_kotlin_version` field in `gradle.properties` for
     details.
 
 - **Plugin Resource Files** :white_check_mark:
 
-- **Task Scheduling**: :o:
-  - Immediate/Timer/Delayed sync tasks are supported.
-  - Tasks can be cancelled normally.
-  - Suboptimal task polling system.
+- **Task Scheduling**: :ballot_box_with_check:
+  
+  Caveats:
+  
+  - Cancelling a task does not try to interrupt invocations already fired (this is by design for stability).
+  - Asynchronous tasks run on virtual threads.
 
 - **Server Operations** :hammer:
-
+  
   - Only server shutdown is supported.
 
 ...For all other systems it **DOES NOT WORK**. 

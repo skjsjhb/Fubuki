@@ -7,10 +7,7 @@ import org.bukkit.scheduler.BukkitScheduler
 import org.bukkit.scheduler.BukkitTask
 import org.bukkit.scheduler.BukkitWorker
 import java.util.*
-import java.util.concurrent.Callable
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Future
-import java.util.concurrent.PriorityBlockingQueue
+import java.util.concurrent.*
 import java.util.function.Consumer
 
 @Suppress("OVERRIDE_DEPRECATION")
@@ -92,20 +89,28 @@ class FubukiScheduler(private val nativeServer: MinecraftServer) : BukkitSchedul
     override fun scheduleSyncRepeatingTask(plugin: Plugin, task: BukkitRunnable, delay: Long, period: Long): Int =
         runTaskTimer(plugin, task, delay, period).taskId
 
-    override fun scheduleAsyncDelayedTask(plugin: Plugin, task: Runnable, delay: Long): Int {
-        TODO("Not yet implemented")
-    }
+    override fun scheduleAsyncDelayedTask(plugin: Plugin, task: Runnable, delay: Long): Int =
+        runTaskLaterAsynchronously(plugin, task, delay).taskId
 
-    override fun scheduleAsyncDelayedTask(plugin: Plugin, task: Runnable): Int {
-        TODO("Not yet implemented")
-    }
+    override fun scheduleAsyncDelayedTask(plugin: Plugin, task: Runnable): Int =
+        scheduleAsyncDelayedTask(plugin, task, -1)
 
-    override fun scheduleAsyncRepeatingTask(plugin: Plugin, task: Runnable, delay: Long, period: Long): Int {
-        TODO("Not yet implemented")
-    }
+    override fun scheduleAsyncRepeatingTask(plugin: Plugin, task: Runnable, delay: Long, period: Long): Int =
+        runTaskTimerAsynchronously(plugin, task, delay, period).taskId
 
     override fun <T : Any?> callSyncMethod(plugin: Plugin, task: Callable<T>): Future<T> {
-        TODO("Not yet implemented")
+        val ft = CompletableFuture<T>()
+        serverExecutor.execute {
+            runCatching {
+                task.call()
+            }.onSuccess {
+                ft.complete(it)
+            }.onFailure {
+                ft.completeExceptionally(it)
+            }
+        }
+
+        return ft
     }
 
     override fun cancelTask(taskId: Int) {
@@ -138,17 +143,14 @@ class FubukiScheduler(private val nativeServer: MinecraftServer) : BukkitSchedul
     override fun runTask(plugin: Plugin, task: BukkitRunnable): BukkitTask =
         runTask(plugin, task as Runnable)
 
-    override fun runTaskAsynchronously(plugin: Plugin, task: Runnable): BukkitTask {
-        TODO("Not yet implemented")
-    }
+    override fun runTaskAsynchronously(plugin: Plugin, task: Runnable): BukkitTask =
+        runTaskLaterAsynchronously(plugin, task, -1)
 
-    override fun runTaskAsynchronously(plugin: Plugin, task: Consumer<in BukkitTask>) {
-        TODO("Not yet implemented")
-    }
+    override fun runTaskAsynchronously(plugin: Plugin, task: Consumer<in BukkitTask>) =
+        runTaskLaterAsynchronously(plugin, task, -1)
 
-    override fun runTaskAsynchronously(plugin: Plugin, task: BukkitRunnable): BukkitTask {
-        TODO("Not yet implemented")
-    }
+    override fun runTaskAsynchronously(plugin: Plugin, task: BukkitRunnable): BukkitTask =
+        runTaskAsynchronously(plugin, task as Runnable)
 
     override fun runTaskLater(plugin: Plugin, task: Runnable, delay: Long): BukkitTask =
         runTaskTimer(plugin, task, delay, -1)
@@ -159,17 +161,14 @@ class FubukiScheduler(private val nativeServer: MinecraftServer) : BukkitSchedul
     override fun runTaskLater(plugin: Plugin, task: BukkitRunnable, delay: Long): BukkitTask =
         runTaskLater(plugin, task as Runnable, delay)
 
-    override fun runTaskLaterAsynchronously(plugin: Plugin, task: Runnable, delay: Long): BukkitTask {
-        TODO("Not yet implemented")
-    }
+    override fun runTaskLaterAsynchronously(plugin: Plugin, task: Runnable, delay: Long): BukkitTask =
+        runTaskTimerAsynchronously(plugin, task, delay, -1)
 
-    override fun runTaskLaterAsynchronously(plugin: Plugin, task: Consumer<in BukkitTask>, delay: Long) {
-        TODO("Not yet implemented")
-    }
+    override fun runTaskLaterAsynchronously(plugin: Plugin, task: Consumer<in BukkitTask>, delay: Long) =
+        runTaskTimerAsynchronously(plugin, task, delay, -1)
 
-    override fun runTaskLaterAsynchronously(plugin: Plugin, task: BukkitRunnable, delay: Long): BukkitTask {
-        TODO("Not yet implemented")
-    }
+    override fun runTaskLaterAsynchronously(plugin: Plugin, task: BukkitRunnable, delay: Long): BukkitTask =
+        runTaskLaterAsynchronously(plugin, task as Runnable, delay)
 
     override fun runTaskTimer(plugin: Plugin, task: Runnable, delay: Long, period: Long): BukkitTask =
         FubukiTask(task, plugin, this, true, delay, period).also { addTask(it) }
@@ -182,12 +181,12 @@ class FubukiScheduler(private val nativeServer: MinecraftServer) : BukkitSchedul
     override fun runTaskTimer(plugin: Plugin, task: BukkitRunnable, delay: Long, period: Long): BukkitTask =
         runTaskTimer(plugin, task as Runnable, delay, period)
 
-    override fun runTaskTimerAsynchronously(plugin: Plugin, task: Runnable, delay: Long, period: Long): BukkitTask {
-        TODO("Not yet implemented")
-    }
+    override fun runTaskTimerAsynchronously(plugin: Plugin, task: Runnable, delay: Long, period: Long): BukkitTask =
+        FubukiTask(task, plugin, this, false, delay, period).also { addTask(it) }
 
     override fun runTaskTimerAsynchronously(plugin: Plugin, task: Consumer<in BukkitTask>, delay: Long, period: Long) {
-        TODO("Not yet implemented")
+        var ts: FubukiTask? = null
+        ts = FubukiTask({ task.accept(ts!!) }, plugin, this, false, delay, period).also { addTask(it) }
     }
 
     override fun runTaskTimerAsynchronously(
@@ -195,8 +194,6 @@ class FubukiScheduler(private val nativeServer: MinecraftServer) : BukkitSchedul
         task: BukkitRunnable,
         delay: Long,
         period: Long
-    ): BukkitTask {
-        TODO("Not yet implemented")
-    }
+    ): BukkitTask = runTaskTimerAsynchronously(plugin, task as Runnable, delay, period)
 
 }

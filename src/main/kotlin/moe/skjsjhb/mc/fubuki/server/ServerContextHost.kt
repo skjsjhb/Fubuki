@@ -1,10 +1,12 @@
 package moe.skjsjhb.mc.fubuki.server
 
+import moe.skjsjhb.mc.fubuki.schedule.FubukiTask
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.server.MinecraftServer
 import org.bukkit.Bukkit
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
 
 object ServerContextHost {
     private val logger = LoggerFactory.getLogger("Fubuki")
@@ -32,6 +34,9 @@ object ServerContextHost {
 
         ServerLifecycleEvents.SERVER_STOPPING.register { sv ->
             fubukiServerMap[sv]?.pluginLifecycleManager?.onShutdown()
+
+            // FIXME don't wait forever
+            FubukiTask.waitAsyncTasks(Long.MAX_VALUE, TimeUnit.DAYS)
         }
 
         ServerLifecycleEvents.SERVER_STARTED.register { sv ->

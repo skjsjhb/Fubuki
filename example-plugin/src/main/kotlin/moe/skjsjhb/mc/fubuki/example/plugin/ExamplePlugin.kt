@@ -13,27 +13,13 @@ class ExamplePlugin : JavaPlugin() {
         saveDefaultConfig()
 
         if (config.getBoolean("enabled")) {
-            logger.info("The counter should be correct and get cancelled after 1s.")
-
-            var ticks = 0
-            val tk = server.scheduler.runTaskTimer(this, Runnable {
-                ticks++
-            }, 0, 0)
-
             object : BukkitRunnable() {
                 override fun run() {
-                    logger.info("Now I'm cancelling the counter.")
-                    tk.cancel()
+                    logger.info("I'm going to sleep for 2s.")
+                    Thread.sleep(2000)
+                    logger.info("Awaken from sleep without blocking!")
                 }
-            }.runTaskLater(this, 20)
-
-            logger.info("I'm stopping the server in 40 ticks!")
-            server.scheduler.runTaskLater(this, Runnable {
-                assert(ticks <= 20)
-                assert(tk.isCancelled)
-                assert(server.isPrimaryThread)
-                server.shutdown()
-            }, 40)
+            }.runTaskAsynchronously(this)
         }
     }
 

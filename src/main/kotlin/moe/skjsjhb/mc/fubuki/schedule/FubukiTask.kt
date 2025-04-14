@@ -2,6 +2,9 @@ package moe.skjsjhb.mc.fubuki.schedule
 
 import org.bukkit.plugin.Plugin
 import org.bukkit.scheduler.BukkitTask
+import org.slf4j.LoggerFactory
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
@@ -14,11 +17,24 @@ class FubukiTask(
     private val interval: Long = -1
 ) : BukkitTask, Runnable, Comparable<FubukiTask> {
     companion object {
+        private val logger = LoggerFactory.getLogger("Fubuki")
         private var nextId = 0
+        private val virtualExecutor = Executors.newThreadPerTaskExecutor(
+            Thread.ofVirtual().name("Fubuki-Async-Task-", 0L).factory()
+        )
 
         @Synchronized
         fun getNewTaskId(): Int {
             return nextId++
+        }
+
+        /**
+         * Waits for all async tasks to complete.
+         */
+        fun waitAsyncTasks(timeout: Long, unit: TimeUnit) {
+            logger.info("Waiting for asynchronous tasks to finish...")
+            virtualExecutor.shutdown()
+            virtualExecutor.awaitTermination(timeout, unit)
         }
     }
 
@@ -49,10 +65,21 @@ class FubukiTask(
         if (isCancelled.get()) return
 
         isRunning.set(true)
-        try {
-            command.run()
-        } finally {
-            isRunning.set(false)
+
+        if (isSync) {
+            try {
+                command.run()
+            } finally {
+                isRunning.set(false)
+            }
+        } else {
+            virtualExecutor.submit {
+                try {
+                    command.run()
+                } finally {
+                    isRunning.set(false)
+                }
+            }
         }
     }
 

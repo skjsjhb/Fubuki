@@ -2,7 +2,9 @@
     "required": true,
     "package": "moe.skjsjhb.mc.fubuki.mixin",
     "compatibilityLevel": "JAVA_21",
-    "mixins": [],
+    "mixins": [
+        "player.PlayerRefMixin"
+    ],
     "injectors": {
         "defaultRequire": 1
     }

@@ -1,6 +1,7 @@
 package moe.skjsjhb.mc.fubuki.server
 
 import moe.skjsjhb.mc.fubuki.ipc.FubukiMessenger
+import moe.skjsjhb.mc.fubuki.player.FubukiPlayer
 import moe.skjsjhb.mc.fubuki.pm.PluginLifecycleManager
 import moe.skjsjhb.mc.fubuki.schedule.FubukiScheduler
 import moe.skjsjhb.mc.fubuki.services.FubukiServicesManager
@@ -45,13 +46,14 @@ import java.util.*
 import java.util.function.Consumer
 import java.util.logging.Logger
 import kotlin.jvm.optionals.getOrNull
+import kotlin.math.abs
 
 /**
  * Fubuki implementation of [Server].
  */
 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
 class FubukiServer(
-    private val nativeServer: MinecraftDedicatedServer
+    val nativeServer: MinecraftDedicatedServer
 ) : Server {
     private val logger = Slf4jBridgedLogger("Bukkit")
     private val commandMap = SimpleCommandMap(this)
@@ -61,6 +63,10 @@ class FubukiServer(
     private val messenger = FubukiMessenger()
     private val unsafeValues = FubukiUnsafeValues()
     private val serverTickManager = FubukiServerTickManager(nativeServer.tickManager)
+
+    private val playerListView by lazy {
+        PlayerListView(Collections.unmodifiableList(nativeServer.playerManager.playerList))
+    }
 
     val pluginLifecycleManager = PluginLifecycleManager(pluginManager)
 
@@ -78,9 +84,7 @@ class FubukiServer(
 
     override fun getBukkitVersion(): String = Versions.BUKKIT
 
-    override fun getOnlinePlayers(): MutableCollection<out Player> {
-        TODO("Not yet implemented")
-    }
+    override fun getOnlinePlayers(): MutableCollection<out Player> = playerListView
 
     override fun getMaxPlayers(): Int = nativeServer.maxPlayerCount
 
@@ -194,19 +198,22 @@ class FubukiServer(
     // Bukkit configuration end
 
     override fun getPlayer(name: String): Player? {
-        TODO("Not yet implemented")
+        getPlayerExact(name)?.let { return it }
+
+        return onlinePlayers.filter { it.name.lowercase().startsWith(name.lowercase()) }
+            .minByOrNull { abs(it.name.length - name.length) }
     }
 
-    override fun getPlayer(id: UUID): Player? {
-        TODO("Not yet implemented")
-    }
+    override fun getPlayer(id: UUID): Player? =
+        nativeServer.playerManager.getPlayer(id)?.let { FubukiPlayer.toBukkit(it) }
 
-    override fun getPlayerExact(name: String): Player? {
-        TODO("Not yet implemented")
-    }
+    override fun getPlayerExact(name: String): Player? =
+        nativeServer.playerManager.getPlayer(name)?.let { FubukiPlayer.toBukkit(it) }
 
     override fun matchPlayer(name: String): MutableList<Player> {
-        TODO("Not yet implemented")
+        getPlayer(name)?.let { return mutableListOf(it) }
+
+        return onlinePlayers.filter { it.name.lowercase().contains(name.lowercase()) }.toMutableList()
     }
 
     override fun getPluginManager(): PluginManager = pluginManager
@@ -268,7 +275,7 @@ class FubukiServer(
 
     override fun reload() {
         // Fubuki does not support reloading
-        throw NotImplementedError("Server reloading is not supported due to mod compatibility concerns")
+        throw UnsupportedOperationException("Server reloading is not supported due to mod compatibility concerns")
     }
 
     override fun reloadData() {

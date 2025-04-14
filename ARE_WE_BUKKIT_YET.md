@@ -45,6 +45,8 @@
   - Cancelling a task does not interrupt invocations already fired (this is by design for stability).
   - Asynchronous tasks run on virtual threads.
 
+- **Player Operations** :hammer:
+
 - **Server Operations** :hammer:
 
 ...For all other systems it **DOES NOT WORK**. 

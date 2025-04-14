@@ -22,6 +22,7 @@ import org.bukkit.potion.PotionType
 /**
  * Fubuki implementation of [UnsafeValues].
  */
+@Suppress("OVERRIDE_DEPRECATION", "DEPRECATION", "REMOVAL")
 class FubukiUnsafeValues : UnsafeValues {
     override fun toLegacy(material: Material?): Material {
         TODO("Not yet implemented")

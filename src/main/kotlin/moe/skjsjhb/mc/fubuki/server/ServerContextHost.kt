@@ -14,6 +14,8 @@ object ServerContextHost {
     private val fubukiServerMap = ConcurrentHashMap<MinecraftServer, FubukiServer>()
     private var serverStarted = false
 
+    fun getFubukiServer(sv: MinecraftServer): FubukiServer = fubukiServerMap.getValue(sv)
+
     fun init() {
         ServerLifecycleEvents.SERVER_STARTING.register {
             if (serverStarted) {
@@ -43,6 +45,10 @@ object ServerContextHost {
 
             // FIXME don't wait forever
             FubukiTask.waitAsyncTasks(Long.MAX_VALUE, TimeUnit.DAYS)
+        }
+
+        ServerLifecycleEvents.SERVER_STOPPED.register { sv ->
+            fubukiServerMap.remove(sv)
         }
 
         ServerLifecycleEvents.SERVER_STARTED.register { sv ->

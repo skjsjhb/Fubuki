@@ -41,10 +41,8 @@
 - **Plugin Resource Files** :white_check_mark:
 
 - **Task Scheduling**: :o:
-  - Sync tasks scheduling is implemented.
-  - We've made it possible to run interval/delayed tasks, but the API is not implemented yet.
-  - We've encountered issues with `BukkitWorker` and we're working around them.
-  - Tasks are not associated with plugins and cannot be cancelled.
+  - Immediate/Timer/Delayed sync tasks are supported.
+  - Tasks can be cancelled normally.
   - Suboptimal task polling system.
 
 - **Server Operations** :hammer:

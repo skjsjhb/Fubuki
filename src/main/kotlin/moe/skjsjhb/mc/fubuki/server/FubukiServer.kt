@@ -6,7 +6,7 @@ import moe.skjsjhb.mc.fubuki.schedule.FubukiScheduler
 import moe.skjsjhb.mc.fubuki.services.FubukiServicesManager
 import moe.skjsjhb.mc.fubuki.util.Slf4jBridgedLogger
 import moe.skjsjhb.mc.fubuki.util.Versions
-import net.minecraft.server.MinecraftServer
+import net.minecraft.server.dedicated.MinecraftDedicatedServer
 import org.bukkit.*
 import org.bukkit.advancement.Advancement
 import org.bukkit.block.data.BlockData
@@ -44,13 +44,14 @@ import java.net.InetAddress
 import java.util.*
 import java.util.function.Consumer
 import java.util.logging.Logger
+import kotlin.jvm.optionals.getOrNull
 
 /**
  * Fubuki implementation of [Server].
  */
 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
 class FubukiServer(
-    private val nativeServer: MinecraftServer
+    private val nativeServer: MinecraftDedicatedServer
 ) : Server {
     private val logger = Slf4jBridgedLogger("Bukkit")
     private val commandMap = SimpleCommandMap(this)
@@ -82,18 +83,14 @@ class FubukiServer(
     override fun getMaxPlayers(): Int = nativeServer.maxPlayerCount
 
     override fun setMaxPlayers(maxPlayers: Int) {
-        TODO("Not yet implemented")
+        nativeServer.playerManager.maxPlayers = maxPlayers
     }
 
     override fun getPort(): Int = nativeServer.serverPort
 
-    override fun getViewDistance(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getViewDistance(): Int = nativeServer.playerManager.viewDistance
 
-    override fun getSimulationDistance(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getSimulationDistance(): Int = nativeServer.playerManager.simulationDistance
 
     override fun getIp(): String = nativeServer.serverIp
 
@@ -117,9 +114,8 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    override fun isLoggingIPs(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isLoggingIPs(): Boolean =
+        nativeServer.shouldLogIps()
 
     override fun getInitialEnabledPacks(): MutableList<String> {
         TODO("Not yet implemented")
@@ -137,40 +133,33 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    override fun getServerResourcePack(): ResourcePack? {
-        TODO("Not yet implemented")
-    }
+    override fun getServerResourcePack(): ResourcePack? =
+        nativeServer.resourcePackProperties.getOrNull()?.let { FubukiResourcePack(it) }
 
-    override fun getResourcePack(): String {
-        TODO("Not yet implemented")
-    }
+    override fun getResourcePack(): String =
+        nativeServer.resourcePackProperties.getOrNull()?.url.orEmpty()
 
-    override fun getResourcePackHash(): String {
-        TODO("Not yet implemented")
-    }
+    override fun getResourcePackHash(): String =
+        nativeServer.resourcePackProperties.getOrNull()?.hash.orEmpty()
 
-    override fun getResourcePackPrompt(): String {
-        TODO("Not yet implemented")
-    }
+    override fun getResourcePackPrompt(): String =
+        nativeServer.resourcePackProperties.getOrNull()?.prompt?.literalString.orEmpty()
 
-    override fun isResourcePackRequired(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isResourcePackRequired(): Boolean =
+        nativeServer.resourcePackProperties.getOrNull()?.isRequired ?: false
 
-    override fun hasWhitelist(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun hasWhitelist(): Boolean =
+        nativeServer.playerManager.isWhitelistEnabled
 
     override fun setWhitelist(value: Boolean) {
-        TODO("Not yet implemented")
+        nativeServer.playerManager.isWhitelistEnabled = value
     }
 
-    override fun isWhitelistEnforced(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isWhitelistEnforced(): Boolean =
+        nativeServer.isEnforceWhitelist
 
     override fun setWhitelistEnforced(value: Boolean) {
-        TODO("Not yet implemented")
+        nativeServer.isEnforceWhitelist = value
     }
 
     override fun getWhitelistedPlayers(): MutableSet<OfflinePlayer> {
@@ -178,7 +167,7 @@ class FubukiServer(
     }
 
     override fun reloadWhitelist() {
-        TODO("Not yet implemented")
+        nativeServer.playerManager.reloadWhitelist()
     }
 
     override fun broadcastMessage(message: String): Int {
@@ -187,9 +176,7 @@ class FubukiServer(
 
     override fun getUpdateFolder(): String = "update"
 
-    override fun getUpdateFolderFile(): File {
-        TODO("Not yet implemented")
-    }
+    override fun getUpdateFolderFile(): File = File(updateFolder)
 
     override fun getConnectionThrottle(): Long {
         TODO("Not yet implemented")
@@ -297,7 +284,7 @@ class FubukiServer(
     }
 
     override fun reload() {
-        TODO("Not yet implemented")
+        throw NotImplementedError("Server reloading is not supported due to mod compatibility concerns")
     }
 
     override fun reloadData() {
@@ -370,21 +357,17 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    override fun getSpawnRadius(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getSpawnRadius(): Int = nativeServer.spawnProtectionRadius
 
     override fun setSpawnRadius(value: Int) {
-        TODO("Not yet implemented")
+        nativeServer.properties.spawnProtection = value
     }
 
     override fun shouldSendChatPreviews(): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun isEnforcingSecureProfiles(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isEnforcingSecureProfiles(): Boolean = nativeServer.shouldEnforceSecureProfile()
 
     override fun isAcceptingTransfers(): Boolean {
         TODO("Not yet implemented")
@@ -394,17 +377,11 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    override fun getOnlineMode(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun getOnlineMode(): Boolean = nativeServer.isOnlineMode
 
-    override fun getAllowFlight(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun getAllowFlight(): Boolean = nativeServer.isFlightEnabled
 
-    override fun isHardcore(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isHardcore(): Boolean = nativeServer.isHardcore
 
     override fun shutdown() {
         nativeServer.stop(false)
@@ -434,9 +411,8 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    override fun getIPBans(): MutableSet<String> {
-        TODO("Not yet implemented")
-    }
+    override fun getIPBans(): MutableSet<String> =
+        nativeServer.playerManager.ipBanList.map.keys.toMutableSet()
 
     override fun banIP(address: String) {
         TODO("Not yet implemented")
@@ -466,12 +442,10 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    override fun getDefaultGameMode(): GameMode {
-        TODO("Not yet implemented")
-    }
+    override fun getDefaultGameMode(): GameMode = GameModeCaster.toBukkit(nativeServer.defaultGameMode)
 
     override fun setDefaultGameMode(mode: GameMode) {
-        TODO("Not yet implemented")
+        nativeServer.defaultGameMode = GameModeCaster.toMojang(mode)
     }
 
     override fun getConsoleSender(): ConsoleCommandSender {
@@ -553,7 +527,7 @@ class FubukiServer(
     override fun getMotd(): String = nativeServer.serverMotd
 
     override fun setMotd(motd: String) {
-        nativeServer.setMotd(motd)
+        nativeServer.motd = motd
     }
 
     override fun getServerLinks(): ServerLinks {
@@ -604,9 +578,7 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    override fun getPauseWhenEmptyTime(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getPauseWhenEmptyTime(): Int = nativeServer.pauseWhenEmptySeconds
 
     override fun setPauseWhenEmptyTime(seconds: Int) {
         TODO("Not yet implemented")

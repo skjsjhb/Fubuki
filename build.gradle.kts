@@ -19,6 +19,8 @@ idea {
 loom {
     splitEnvironmentSourceSets()
 
+    accessWidenerPath = file("src/main/resources/fubuki.accesswidener")
+
     mods {
         create("fubuki") {
             sourceSet(sourceSets["main"])

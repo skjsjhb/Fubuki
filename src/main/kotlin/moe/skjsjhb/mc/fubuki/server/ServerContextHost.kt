@@ -3,6 +3,7 @@ package moe.skjsjhb.mc.fubuki.server
 import moe.skjsjhb.mc.fubuki.schedule.FubukiTask
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.dedicated.MinecraftDedicatedServer
 import org.bukkit.Bukkit
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
@@ -18,6 +19,11 @@ object ServerContextHost {
             if (serverStarted) {
                 logger.warn("Redefining server instance is not currently supported.")
                 logger.warn("The newly started server (aka. ${it}) will not have plugin-loading capabilities.")
+                return@register
+            }
+
+            if (it !is MinecraftDedicatedServer) {
+                logger.warn("Only dedicated server is supported.")
                 return@register
             }
 

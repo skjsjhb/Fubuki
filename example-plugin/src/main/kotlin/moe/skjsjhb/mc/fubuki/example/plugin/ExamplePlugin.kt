@@ -1,7 +1,6 @@
 package moe.skjsjhb.mc.fubuki.example.plugin
 
 import org.bukkit.plugin.java.JavaPlugin
-import org.bukkit.scheduler.BukkitRunnable
 
 class ExamplePlugin : JavaPlugin() {
     override fun onLoad() {
@@ -12,15 +11,8 @@ class ExamplePlugin : JavaPlugin() {
     override fun onEnable() {
         saveDefaultConfig()
 
-        if (config.getBoolean("enabled")) {
-            object : BukkitRunnable() {
-                override fun run() {
-                    logger.info("I'm going to sleep for 2s.")
-                    Thread.sleep(2000)
-                    logger.info("Awaken from sleep without blocking!")
-                }
-            }.runTaskAsynchronously(this)
-        }
+        server.maxPlayers = 100
+        server.motd = "Fubuki is a Bukkit API translator"
     }
 
     override fun onDisable() {

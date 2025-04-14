@@ -4,4 +4,6 @@ accessible field net/minecraft/server/PlayerManager maxPlayers I
 accessible field net/minecraft/server/ServerConfigList map Ljava/util/Map;
 mutable field net/minecraft/server/PlayerManager maxPlayers I
 mutable field net/minecraft/server/dedicated/ServerPropertiesHandler spawnProtection I
-
+mutable field net/minecraft/server/dedicated/ServerPropertiesHandler pauseWhenEmptySeconds I
+accessible field net/minecraft/server/dedicated/ServerPropertiesHandler worldGenProperties Lnet/minecraft/server/dedicated/ServerPropertiesHandler$WorldGenProperties;
+accessible field net/minecraft/server/dedicated/ServerPropertiesHandler$WorldGenProperties levelType Ljava/lang/String;

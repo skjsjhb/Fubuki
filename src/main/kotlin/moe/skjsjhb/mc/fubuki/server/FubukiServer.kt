@@ -59,6 +59,8 @@ class FubukiServer(
     private val scheduler = FubukiScheduler(nativeServer)
     private val servicesManager = FubukiServicesManager()
     private val messenger = FubukiMessenger()
+    private val unsafeValues = FubukiUnsafeValues()
+    private val serverTickManager = FubukiServerTickManager(nativeServer.tickManager)
 
     val pluginLifecycleManager = PluginLifecycleManager(pluginManager)
 
@@ -94,25 +96,19 @@ class FubukiServer(
 
     override fun getIp(): String = nativeServer.serverIp
 
-    override fun getWorldType(): String {
-        TODO("Not yet implemented")
-    }
+    override fun getWorldType(): String =
+        nativeServer.properties.worldGenProperties.levelType
 
-    override fun getGenerateStructures(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun getGenerateStructures(): Boolean =
+        nativeServer.properties.generatorOptions.shouldGenerateStructures()
 
-    override fun getMaxWorldSize(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getMaxWorldSize(): Int =
+        nativeServer.maxWorldBorderRadius
 
-    override fun getAllowEnd(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun getAllowEnd(): Boolean = true // TODO support disabling end world
 
-    override fun getAllowNether(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun getAllowNether(): Boolean =
+        nativeServer.properties.allowNether
 
     override fun isLoggingIPs(): Boolean =
         nativeServer.shouldLogIps()
@@ -129,9 +125,7 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    override fun getServerTickManager(): ServerTickManager {
-        TODO("Not yet implemented")
-    }
+    override fun getServerTickManager(): ServerTickManager = serverTickManager
 
     override fun getServerResourcePack(): ResourcePack? =
         nativeServer.resourcePackProperties.getOrNull()?.let { FubukiResourcePack(it) }
@@ -174,41 +168,30 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
+    // Bukkit configuration begin
+    // Bukkit configurations are not supported yet so default values are used
+
     override fun getUpdateFolder(): String = "update"
 
     override fun getUpdateFolderFile(): File = File(updateFolder)
 
-    override fun getConnectionThrottle(): Long {
-        TODO("Not yet implemented")
-    }
+    override fun getConnectionThrottle(): Long = 0
 
-    override fun getTicksPerAnimalSpawns(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getTicksPerAnimalSpawns(): Int = 400
 
-    override fun getTicksPerMonsterSpawns(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getTicksPerMonsterSpawns(): Int = 1
 
-    override fun getTicksPerWaterSpawns(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getTicksPerWaterSpawns(): Int = 1
 
-    override fun getTicksPerWaterAmbientSpawns(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getTicksPerWaterAmbientSpawns(): Int = 1
 
-    override fun getTicksPerWaterUndergroundCreatureSpawns(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getTicksPerWaterUndergroundCreatureSpawns(): Int = 1
 
-    override fun getTicksPerAmbientSpawns(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getTicksPerAmbientSpawns(): Int = 1
 
-    override fun getTicksPerSpawns(spawnCategory: SpawnCategory): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getTicksPerSpawns(spawnCategory: SpawnCategory): Int = 1
+
+    // Bukkit configuration end
 
     override fun getPlayer(name: String): Player? {
         TODO("Not yet implemented")
@@ -284,6 +267,7 @@ class FubukiServer(
     }
 
     override fun reload() {
+        // Fubuki does not support reloading
         throw NotImplementedError("Server reloading is not supported due to mod compatibility concerns")
     }
 
@@ -363,19 +347,15 @@ class FubukiServer(
         nativeServer.properties.spawnProtection = value
     }
 
-    override fun shouldSendChatPreviews(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun shouldSendChatPreviews(): Boolean = false  // Seems already removed by Mojang
 
     override fun isEnforcingSecureProfiles(): Boolean = nativeServer.shouldEnforceSecureProfile()
 
-    override fun isAcceptingTransfers(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isAcceptingTransfers(): Boolean =
+        nativeServer.acceptsTransfers()
 
-    override fun getHideOnlinePlayers(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun getHideOnlinePlayers(): Boolean =
+        nativeServer.hideOnlinePlayers()
 
     override fun getOnlineMode(): Boolean = nativeServer.isOnlineMode
 
@@ -452,9 +432,7 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    override fun getWorldContainer(): File {
-        TODO("Not yet implemented")
-    }
+    override fun getWorldContainer(): File = File(".")
 
     override fun getOfflinePlayers(): Array<OfflinePlayer> {
         TODO("Not yet implemented")
@@ -581,7 +559,7 @@ class FubukiServer(
     override fun getPauseWhenEmptyTime(): Int = nativeServer.pauseWhenEmptySeconds
 
     override fun setPauseWhenEmptyTime(seconds: Int) {
-        TODO("Not yet implemented")
+        nativeServer.properties.pauseWhenEmptySeconds = seconds
     }
 
     override fun createChunkData(world: World): ChunkGenerator.ChunkData {
@@ -666,8 +644,5 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    private val unsafeValues = FubukiUnsafeValues()
-
-    @Deprecated("Deprecated in Java")
     override fun getUnsafe(): UnsafeValues = unsafeValues
 }

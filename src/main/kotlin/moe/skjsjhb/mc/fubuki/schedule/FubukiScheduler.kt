@@ -11,41 +11,24 @@ import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Future
 import java.util.concurrent.PriorityBlockingQueue
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 
 @Suppress("OVERRIDE_DEPRECATION")
-class FubukiScheduler(nativeServer: MinecraftServer) : BukkitScheduler {
+class FubukiScheduler(private val nativeServer: MinecraftServer) : BukkitScheduler {
     private val serverExecutor = ServerThreadExecutor(nativeServer)
-    private val ticks = AtomicInteger(0)
     private val tasksQueue = PriorityBlockingQueue<FubukiTask>()
 
     private val tasksIds = ConcurrentHashMap<Int, FubukiTask>()
     private val pluginTasks = ConcurrentHashMap<Plugin, MutableSet<FubukiTask>>()
 
     init {
-        scheduleTickCounter()
         scheduleTaskPoller()
     }
 
     /**
      * Gets the current tick of the server.
      */
-    fun getTicks(): Int = ticks.get()
-
-    /**
-     * Adds an auto-renewal core task to count server ticks.
-     */
-    private fun scheduleTickCounter() {
-        val tickCounter = object : Runnable {
-            override fun run() {
-                ticks.incrementAndGet()
-                serverExecutor.execute(this)
-            }
-        }
-
-        serverExecutor.execute(tickCounter)
-    }
+    fun getTicks(): Int = nativeServer.ticks
 
     /**
      * Adds an auto-renewal core task to poll the task queue.
@@ -55,7 +38,7 @@ class FubukiScheduler(nativeServer: MinecraftServer) : BukkitScheduler {
             override fun run() {
                 while (!tasksQueue.isEmpty()) {
                     val task = tasksQueue.peek() ?: break
-                    if (task.nextTimeToRun.get() <= ticks.get()) {
+                    if (task.nextTimeToRun.get() <= getTicks()) {
                         tasksQueue.poll()
                         task.run()
                         if (task.possiblyRenew()) {

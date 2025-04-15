@@ -1,6 +1,7 @@
 package moe.skjsjhb.mc.fubuki.player
 
-import moe.skjsjhb.mc.fubuki.server.ServerContextHost
+import moe.skjsjhb.mc.fubuki.interop.asBukkit
+import moe.skjsjhb.mc.fubuki.server.FubukiServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import org.bukkit.*
@@ -44,23 +45,10 @@ import java.util.concurrent.CompletableFuture
 class FubukiPlayer(
     private val delegate: ServerPlayerEntity
 ) : Player {
-    private val server = ServerContextHost.getFubukiServer(delegate.server)
+    private val server: FubukiServer = delegate.server.asBukkit()
 
-    companion object {
-        /**
-         * Gets or creates a Bukkit [Player] from [ServerPlayerEntity].
-         */
-        fun toBukkit(p: ServerPlayerEntity): FubukiPlayer {
-            return (p as PlayerRef).`fubuki$getPlayer`()
-        }
-
-        /**
-         * Unwraps the Bukkit [Player] and gets the [ServerPlayerEntity].
-         */
-        fun toMojang(p: Player): ServerPlayerEntity {
-            // The cast should always success unless there are other player implementations.
-            return (p as FubukiPlayer).delegate
-        }
+    fun toMojang(): ServerPlayerEntity {
+        return delegate
     }
 
     override fun getAttribute(attribute: Attribute): AttributeInstance? {

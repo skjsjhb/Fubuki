@@ -1,7 +1,7 @@
 package moe.skjsjhb.mc.fubuki
 
 import moe.skjsjhb.mc.fubuki.schedule.ServerThreadExecutor
-import moe.skjsjhb.mc.fubuki.server.ServerContextHost
+import moe.skjsjhb.mc.fubuki.server.ServerInit
 import net.fabricmc.api.ModInitializer
 import org.slf4j.LoggerFactory
 
@@ -15,6 +15,6 @@ object Fubuki : ModInitializer {
         logger.info("This is Fubuki, a Bukkit API translator for Fabric.")
 
         ServerThreadExecutor.init()
-        ServerContextHost.init()
+        ServerInit.init()
     }
 }

@@ -1,20 +1,16 @@
 package moe.skjsjhb.mc.fubuki.server
 
+import moe.skjsjhb.mc.fubuki.interop.asBukkit
 import moe.skjsjhb.mc.fubuki.schedule.FubukiTask
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
-import net.minecraft.server.MinecraftServer
 import net.minecraft.server.dedicated.MinecraftDedicatedServer
 import org.bukkit.Bukkit
 import org.slf4j.LoggerFactory
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
-object ServerContextHost {
+object ServerInit {
     private val logger = LoggerFactory.getLogger("Fubuki")
-    private val fubukiServerMap = ConcurrentHashMap<MinecraftServer, FubukiServer>()
     private var serverStarted = false
-
-    fun getFubukiServer(sv: MinecraftServer): FubukiServer = fubukiServerMap.getValue(sv)
 
     fun init() {
         ServerLifecycleEvents.SERVER_STARTING.register {
@@ -30,29 +26,26 @@ object ServerContextHost {
             }
 
             serverStarted = true
-            val fs = FubukiServer(it)
-            Bukkit.setServer(fs)
 
-            fs.pluginLifecycleManager.run {
+            val fsv = FubukiServer(it)
+
+            Bukkit.setServer(fsv)
+
+            fsv.pluginLifecycleManager.run {
                 loadPlugins()
                 onStartup()
             }
-            fubukiServerMap[it] = fs
         }
 
-        ServerLifecycleEvents.SERVER_STOPPING.register { sv ->
-            fubukiServerMap[sv]?.pluginLifecycleManager?.onShutdown()
+        ServerLifecycleEvents.SERVER_STOPPING.register {
+            it.asBukkit<FubukiServer>().pluginLifecycleManager.onShutdown()
 
             // FIXME don't wait forever
             FubukiTask.waitAsyncTasks(Long.MAX_VALUE, TimeUnit.DAYS)
         }
 
-        ServerLifecycleEvents.SERVER_STOPPED.register { sv ->
-            fubukiServerMap.remove(sv)
-        }
-
-        ServerLifecycleEvents.SERVER_STARTED.register { sv ->
-            fubukiServerMap[sv]?.pluginLifecycleManager?.run {
+        ServerLifecycleEvents.SERVER_STARTED.register {
+            it.asBukkit<FubukiServer>().pluginLifecycleManager.run {
                 onPostWorld()
                 onStarted()
             }

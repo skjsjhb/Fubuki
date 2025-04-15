@@ -1,7 +1,8 @@
 package moe.skjsjhb.mc.fubuki.server
 
+import moe.skjsjhb.mc.fubuki.interop.BukkitRef
+import moe.skjsjhb.mc.fubuki.interop.asBukkit
 import moe.skjsjhb.mc.fubuki.ipc.FubukiMessenger
-import moe.skjsjhb.mc.fubuki.player.FubukiPlayer
 import moe.skjsjhb.mc.fubuki.pm.PluginLifecycleManager
 import moe.skjsjhb.mc.fubuki.schedule.FubukiScheduler
 import moe.skjsjhb.mc.fubuki.services.FubukiServicesManager
@@ -55,6 +56,10 @@ import kotlin.math.abs
 class FubukiServer(
     val nativeServer: MinecraftDedicatedServer
 ) : Server {
+    init {
+        (nativeServer as BukkitRef).`fubuki$setRef`(this)
+    }
+
     private val logger = Slf4jBridgedLogger("Bukkit")
     private val commandMap = SimpleCommandMap(this)
     private val pluginManager = SimplePluginManager(this, commandMap)
@@ -205,10 +210,10 @@ class FubukiServer(
     }
 
     override fun getPlayer(id: UUID): Player? =
-        nativeServer.playerManager.getPlayer(id)?.let { FubukiPlayer.toBukkit(it) }
+        nativeServer.playerManager.getPlayer(id)?.asBukkit()
 
     override fun getPlayerExact(name: String): Player? =
-        nativeServer.playerManager.getPlayer(name)?.let { FubukiPlayer.toBukkit(it) }
+        nativeServer.playerManager.getPlayer(name)?.asBukkit()
 
     override fun matchPlayer(name: String): MutableList<Player> {
         getPlayer(name)?.let { return mutableListOf(it) }
@@ -429,10 +434,10 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    override fun getDefaultGameMode(): GameMode = GameModeCaster.toBukkit(nativeServer.defaultGameMode)
+    override fun getDefaultGameMode(): GameMode = nativeServer.defaultGameMode.toBukkit()
 
     override fun setDefaultGameMode(mode: GameMode) {
-        nativeServer.defaultGameMode = GameModeCaster.toMojang(mode)
+        nativeServer.defaultGameMode = mode.toMojang()
     }
 
     override fun getConsoleSender(): ConsoleCommandSender {

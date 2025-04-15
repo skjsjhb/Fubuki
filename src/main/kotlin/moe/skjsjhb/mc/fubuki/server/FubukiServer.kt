@@ -1,7 +1,7 @@
 package moe.skjsjhb.mc.fubuki.server
 
+import moe.skjsjhb.mc.fubuki.entity.toBukkit
 import moe.skjsjhb.mc.fubuki.interop.BukkitRef
-import moe.skjsjhb.mc.fubuki.interop.asBukkit
 import moe.skjsjhb.mc.fubuki.ipc.FubukiMessenger
 import moe.skjsjhb.mc.fubuki.pm.PluginLifecycleManager
 import moe.skjsjhb.mc.fubuki.schedule.FubukiScheduler
@@ -210,10 +210,10 @@ class FubukiServer(
     }
 
     override fun getPlayer(id: UUID): Player? =
-        nativeServer.playerManager.getPlayer(id)?.asBukkit()
+        nativeServer.playerManager.getPlayer(id)?.toBukkit()
 
     override fun getPlayerExact(name: String): Player? =
-        nativeServer.playerManager.getPlayer(name)?.asBukkit()
+        nativeServer.playerManager.getPlayer(name)?.toBukkit()
 
     override fun matchPlayer(name: String): MutableList<Player> {
         getPlayer(name)?.let { return mutableListOf(it) }

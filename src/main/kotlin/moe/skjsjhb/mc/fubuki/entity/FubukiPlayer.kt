@@ -29,10 +29,9 @@ import java.util.concurrent.CompletableFuture
 
 @Suppress("OVERRIDE_DEPRECATION", "REMOVAL", "DEPRECATION")
 class FubukiPlayer(
-    private val playerDelegate: ServerPlayerEntity
-) : FubukiLivingEntity(playerDelegate), Player {
-
-    fun asMojangPlayer(): ServerPlayerEntity = playerDelegate
+    override val delegate: ServerPlayerEntity
+) : FubukiLivingEntity(delegate), Player {
+    override fun toMojang(): ServerPlayerEntity = delegate
 
     override fun playEffect(loc: Location, effect: Effect, data: Int) {
         TODO("Not yet implemented")

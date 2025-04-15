@@ -23,30 +23,40 @@
 
 </details>
 
----
+### Plugin Management
 
-- **Plugin Loading** :ballot_box_with_check:
+- **Plugin Loading** :white_check_mark:
 
-  Limitations:
-
-  - Plugin API version compatibility is not checked.
-
-  Caveats:
-
-  - Kotlin standard library is bundled with Fubuki, see the `fabric_kotlin_version` field in `gradle.properties` for
-    details.
+  - Plugin API version compatibility is not checked due to the fact that Fabric can be installed for snapshots. The API
+    stability cannot be guaranteed, making the check pointless.
 
 - **Plugin Resource Files** :white_check_mark:
 
-- **Task Scheduling**: :ballot_box_with_check:
+### Server
 
-  Caveats:
+- **Server Operations** :hammer:
+
+- **Task Scheduling**: :white_check_mark:
 
   - Cancelling a task does not interrupt invocations already fired (this is by design for stability).
   - Asynchronous tasks run on virtual threads.
 
+### Data Store
+
+- **Metadata** :o:
+
+  - Only available for entities.
+
+- **Persistent Data Container** :x:
+
+### Entity
+
+- **Entity Operations** :hammer:
+
+### Player
+
 - **Player Operations** :hammer:
 
-- **Server Operations** :hammer:
+---
 
 ...For all other systems it **DOES NOT WORK**. 

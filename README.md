@@ -37,7 +37,7 @@ many mods, which have likely already covered everything your need?
 
 None for now, but we're developing on 1.21.5. It will be the first one available once completed.
 
-We're planning to port Fubuki to earlier versions, but not 1.12.x or earlier.
+We're planning to port Fubuki to earlier versions that Fabric supports.
 
 ## Features
 

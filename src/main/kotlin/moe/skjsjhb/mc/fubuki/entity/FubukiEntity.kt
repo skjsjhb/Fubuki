@@ -1,8 +1,11 @@
 package moe.skjsjhb.mc.fubuki.entity
 
-import moe.skjsjhb.mc.fubuki.interop.asBukkit
+import moe.skjsjhb.mc.fubuki.interop.assumeBukkit
+import moe.skjsjhb.mc.fubuki.interop.toNamespacedKey
+import moe.skjsjhb.mc.fubuki.math.toBukkitVector
+import moe.skjsjhb.mc.fubuki.math.toMojangVec3d
 import moe.skjsjhb.mc.fubuki.metadata.MetadataContainer
-import moe.skjsjhb.mc.fubuki.server.FubukiServer
+import net.minecraft.registry.Registries
 import org.bukkit.*
 import org.bukkit.block.BlockFace
 import org.bukkit.block.PistonMoveReaction
@@ -18,27 +21,26 @@ import org.bukkit.plugin.Plugin
 import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 @Suppress("OVERRIDE_DEPRECATION", "REMOVAL")
 open class FubukiEntity(
-    private val entityDelegate: net.minecraft.entity.Entity
+    protected open val delegate: net.minecraft.entity.Entity
 ) : Entity {
-    private val server: FubukiServer = entityDelegate.server!!.asBukkit() // This value is only nullable on client side
-
-    fun asMojangEntity() = entityDelegate
+    open fun toMojang(): net.minecraft.entity.Entity = delegate
 
     override fun setMetadata(metadataKey: String, newMetadataValue: MetadataValue) {
-        (this as MetadataContainer).`fubuki$setMetadata`(metadataKey, newMetadataValue)
+        (delegate as MetadataContainer).`fubuki$setMetadata`(metadataKey, newMetadataValue)
     }
 
     override fun getMetadata(metadataKey: String): MutableList<MetadataValue> =
-        (this as MetadataContainer).`fubuki$getMetadata`(metadataKey)
+        (delegate as MetadataContainer).`fubuki$getMetadata`(metadataKey)
 
     override fun hasMetadata(metadataKey: String): Boolean =
-        (this as MetadataContainer).`fubuki$hasMetadata`(metadataKey)
+        (delegate as MetadataContainer).`fubuki$hasMetadata`(metadataKey)
 
     override fun removeMetadata(metadataKey: String, owningPlugin: Plugin) {
-        (this as MetadataContainer).`fubuki$removeMetadata`(metadataKey, owningPlugin)
+        (delegate as MetadataContainer).`fubuki$removeMetadata`(metadataKey, owningPlugin)
     }
 
     override fun isOp(): Boolean {
@@ -93,25 +95,17 @@ open class FubukiEntity(
         TODO("Not yet implemented")
     }
 
-    override fun sendMessage(message: String) {
-        TODO("Not yet implemented")
-    }
+    override fun sendMessage(message: String) {}
 
-    override fun sendMessage(vararg messages: String?) {
-        TODO("Not yet implemented")
-    }
+    override fun sendMessage(vararg messages: String?) {}
 
-    override fun sendMessage(sender: UUID?, message: String) {
-        TODO("Not yet implemented")
-    }
+    override fun sendMessage(sender: UUID?, message: String) {}
 
-    override fun sendMessage(sender: UUID?, vararg messages: String?) {
-        TODO("Not yet implemented")
-    }
+    override fun sendMessage(sender: UUID?, vararg messages: String?) {}
 
-    override fun getServer(): Server = server
+    override fun getServer(): Server = delegate.server!!.assumeBukkit()
 
-    override fun getName(): String = entityDelegate.nameForScoreboard
+    override fun getName(): String = delegate.nameForScoreboard
 
     override fun getCustomName(): String? {
         TODO("Not yet implemented")
@@ -133,17 +127,15 @@ open class FubukiEntity(
         TODO("Not yet implemented")
     }
 
-    override fun getVelocity(): Vector {
-        TODO("Not yet implemented")
-    }
+    override fun getVelocity(): Vector = delegate.velocity.toBukkitVector()
 
     override fun setVelocity(velocity: Vector) {
-        TODO("Not yet implemented")
+        delegate.velocity = velocity.toMojangVec3d()
     }
 
-    override fun getHeight(): Double = entityDelegate.height.toDouble()
+    override fun getHeight(): Double = delegate.height.toDouble()
 
-    override fun getWidth(): Double = entityDelegate.width.toDouble()
+    override fun getWidth(): Double = delegate.width.toDouble()
 
     override fun getBoundingBox(): BoundingBox {
         TODO("Not yet implemented")
@@ -151,9 +143,9 @@ open class FubukiEntity(
 
     override fun isOnGround(): Boolean =
         // TODO handle arrows
-        entityDelegate.isOnGround
+        delegate.isOnGround
 
-    override fun isInWater(): Boolean = entityDelegate.isTouchingWater
+    override fun isInWater(): Boolean = delegate.isTouchingWater
 
     override fun getWorld(): World {
         TODO("Not yet implemented")
@@ -183,19 +175,15 @@ open class FubukiEntity(
         TODO("Not yet implemented")
     }
 
-    override fun getEntityId(): Int = entityDelegate.id
+    override fun getEntityId(): Int = delegate.id
 
-    override fun getFireTicks(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getFireTicks(): Int = delegate.fireTicks
 
     override fun setFireTicks(ticks: Int) {
-        TODO("Not yet implemented")
+        delegate.fireTicks = ticks
     }
 
-    override fun getMaxFireTicks(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getMaxFireTicks(): Int = delegate.burningDuration
 
     override fun isVisualFire(): Boolean {
         TODO("Not yet implemented")
@@ -205,28 +193,22 @@ open class FubukiEntity(
         TODO("Not yet implemented")
     }
 
-    override fun getFreezeTicks(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getFreezeTicks(): Int = delegate.frozenTicks
 
     override fun setFreezeTicks(ticks: Int) {
-        TODO("Not yet implemented")
+        delegate.frozenTicks = ticks
     }
 
-    override fun getMaxFreezeTicks(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getMaxFreezeTicks(): Int = delegate.minFreezeDamageTicks
 
-    override fun isFrozen(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isFrozen(): Boolean = delegate.isFrozen
 
     override fun remove() {
         // TODO plugin remove (seems related to a leash bug)
-        entityDelegate.discard()
+        delegate.discard()
     }
 
-    override fun isDead(): Boolean = !entityDelegate.isAlive
+    override fun isDead(): Boolean = !delegate.isAlive
 
     override fun isValid(): Boolean {
         TODO("Not yet implemented")
@@ -241,40 +223,48 @@ open class FubukiEntity(
         TODO("Not yet implemented")
     }
 
-    override fun getPassenger(): Entity? {
-        TODO("Not yet implemented")
-    }
+    override fun getPassenger(): Entity? = delegate.firstPassenger?.toBukkit()
 
     override fun setPassenger(passenger: Entity): Boolean {
-        TODO("Not yet implemented")
+        (passenger as FubukiEntity).delegate.let {
+            // An entity cannot ride itself
+            // Seems Mojang code does not check for this
+            if (it == delegate) return false
+            return it.startRiding(delegate)
+        }
     }
 
-    override fun getPassengers(): MutableList<Entity> {
-        TODO("Not yet implemented")
-    }
+    override fun getPassengers(): MutableList<Entity> =
+        delegate.passengerList.map { it.toBukkit() }.toMutableList()
 
+    // Such a weird method name...
+    // It actually forces the passenger to ride on this entity
     override fun addPassenger(passenger: Entity): Boolean {
-        TODO("Not yet implemented")
+        (passenger as FubukiEntity).delegate.let {
+            if (it == delegate) return false
+            return it.startRiding(delegate, true)
+        }
     }
 
     override fun removePassenger(passenger: Entity): Boolean {
-        TODO("Not yet implemented")
+        (passenger as FubukiEntity).delegate.stopRiding()
+        return true
     }
 
-    override fun isEmpty(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isEmpty(): Boolean = delegate.passengerList.isEmpty()
 
-    override fun eject(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun eject(): Boolean =
+        if (isEmpty()) true
+        else {
+            delegate.removeAllPassengers()
+            false
+        }
 
-    override fun getFallDistance(): Float {
-        TODO("Not yet implemented")
-    }
+
+    override fun getFallDistance(): Float = delegate.fallDistance.toFloat()
 
     override fun setFallDistance(distance: Float) {
-        TODO("Not yet implemented")
+        delegate.fallDistance = distance.toDouble()
     }
 
     override fun getLastDamageCause(): EntityDamageEvent? {
@@ -285,23 +275,25 @@ open class FubukiEntity(
         TODO("Not yet implemented")
     }
 
-    override fun getUniqueId(): UUID = entityDelegate.uuid
+    override fun getUniqueId(): UUID = delegate.uuid
 
-    override fun getTicksLived(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getTicksLived(): Int = delegate.age // Weird field name
 
     override fun setTicksLived(value: Int) {
-        TODO("Not yet implemented")
+        delegate.age = value
     }
 
     override fun playEffect(type: EntityEffect) {
         TODO("Not yet implemented")
     }
 
-    override fun getType(): EntityType {
-        TODO("Not yet implemented")
-    }
+    override fun getType(): EntityType =
+        Registries.ENTITY_TYPE.getKey(delegate.type).getOrNull()?.let {
+            // CraftBukkit throws an exception when the type could not be found in the Bukkit registry.
+            // We'll utilize the UNKNOWN value to suppress such behavior.
+            // This shall make plugins able to know about mod entity types.
+            Registry.ENTITY_TYPE.get(it.value.toNamespacedKey())
+        } ?: EntityType.UNKNOWN
 
     override fun getSwimSound(): Sound {
         TODO("Not yet implemented")
@@ -327,12 +319,10 @@ open class FubukiEntity(
         TODO("Not yet implemented")
     }
 
-    override fun isCustomNameVisible(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isCustomNameVisible(): Boolean = delegate.isCustomNameVisible
 
     override fun setCustomNameVisible(flag: Boolean) {
-        TODO("Not yet implemented")
+        delegate.isCustomNameVisible = flag
     }
 
     override fun isVisibleByDefault(): Boolean {
@@ -347,57 +337,48 @@ open class FubukiEntity(
         TODO("Not yet implemented")
     }
 
-    override fun isGlowing(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isGlowing(): Boolean = delegate.isGlowing
 
     override fun setGlowing(flag: Boolean) {
-        TODO("Not yet implemented")
+        delegate.isGlowing = flag
     }
 
-    override fun isInvulnerable(): Boolean {
-        TODO("Not yet implemented")
-    }
+    // This method does not have a clear definition of "invulnerable" in the interface
+    // CraftBukkit uses a more complex (stricter) logic to define it
+    // We'll simply use this value unless incompatibility is found
+    override fun isInvulnerable(): Boolean =
+        delegate.isInvulnerable
 
     override fun setInvulnerable(flag: Boolean) {
-        TODO("Not yet implemented")
+        delegate.isInvulnerable = flag
     }
 
-    override fun isSilent(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isSilent(): Boolean = delegate.isSilent
 
     override fun setSilent(flag: Boolean) {
-        TODO("Not yet implemented")
+        delegate.isSilent = flag
     }
 
-    override fun hasGravity(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun hasGravity(): Boolean = !delegate.hasNoGravity()
 
     override fun setGravity(gravity: Boolean) {
-        TODO("Not yet implemented")
+        delegate.setNoGravity(!gravity)
     }
 
-    override fun getPortalCooldown(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getPortalCooldown(): Int =
+        delegate.portalCooldown
 
     override fun setPortalCooldown(cooldown: Int) {
-        TODO("Not yet implemented")
+        delegate.portalCooldown = cooldown
     }
 
-    override fun getScoreboardTags(): MutableSet<String> {
-        TODO("Not yet implemented")
-    }
+    override fun getScoreboardTags(): MutableSet<String> = delegate.commandTags
 
-    override fun addScoreboardTag(tag: String): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun addScoreboardTag(tag: String): Boolean =
+        delegate.addCommandTag(tag)
 
-    override fun removeScoreboardTag(tag: String): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun removeScoreboardTag(tag: String): Boolean =
+        delegate.removeCommandTag(tag)
 
     override fun getPistonMoveReaction(): PistonMoveReaction {
         TODO("Not yet implemented")

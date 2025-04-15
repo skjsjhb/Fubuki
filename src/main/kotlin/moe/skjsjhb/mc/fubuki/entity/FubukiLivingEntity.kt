@@ -18,9 +18,12 @@ import org.bukkit.util.RayTraceResult
 import org.bukkit.util.Vector
 import java.util.*
 
+@Suppress("OVERRIDE_DEPRECATION")
 open class FubukiLivingEntity(
-    private val livingEntityDelegate: net.minecraft.entity.LivingEntity
-) : FubukiEntity(livingEntityDelegate), LivingEntity {
+    override val delegate: net.minecraft.entity.LivingEntity
+) : FubukiEntity(delegate), LivingEntity {
+
+    override fun toMojang(): net.minecraft.entity.LivingEntity = delegate
 
     override fun getAttribute(attribute: Attribute): AttributeInstance? {
         TODO("Not yet implemented")

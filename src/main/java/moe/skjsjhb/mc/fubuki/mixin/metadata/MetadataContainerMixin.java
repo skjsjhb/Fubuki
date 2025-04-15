@@ -1,7 +1,7 @@
 package moe.skjsjhb.mc.fubuki.mixin.metadata;
 
 import moe.skjsjhb.mc.fubuki.metadata.MetadataContainer;
-import org.bukkit.entity.Entity;
+import net.minecraft.entity.Entity;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;

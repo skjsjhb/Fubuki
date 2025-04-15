@@ -1,4 +1,4 @@
-package moe.skjsjhb.mc.fubuki.mixin.player;
+package moe.skjsjhb.mc.fubuki.mixin.util;
 
 import moe.skjsjhb.mc.fubuki.interop.BukkitRef;
 import net.minecraft.entity.Entity;

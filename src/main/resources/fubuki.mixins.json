@@ -3,7 +3,8 @@
     "package": "moe.skjsjhb.mc.fubuki.mixin",
     "compatibilityLevel": "JAVA_21",
     "mixins": [
-        "player.BukkitRefMixin"
+        "metadata.MetadataContainerMixin",
+        "util.BukkitRefMixin"
     ],
     "injectors": {
         "defaultRequire": 1

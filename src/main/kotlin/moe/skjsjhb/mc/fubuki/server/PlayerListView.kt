@@ -1,7 +1,7 @@
 package moe.skjsjhb.mc.fubuki.server
 
+import moe.skjsjhb.mc.fubuki.entity.FubukiPlayer
 import moe.skjsjhb.mc.fubuki.interop.asBukkit
-import moe.skjsjhb.mc.fubuki.player.FubukiPlayer
 import net.minecraft.server.network.ServerPlayerEntity
 import org.bukkit.entity.Player
 
@@ -29,10 +29,10 @@ class PlayerListView(
     }
 
     override fun containsAll(elements: Collection<Player>): Boolean =
-        source.containsAll(elements.map { (it as FubukiPlayer).toMojang() })
+        source.containsAll(elements.map { (it as FubukiPlayer).asMojangPlayer() })
 
     override fun contains(element: Player): Boolean =
-        source.contains((element as FubukiPlayer).toMojang())
+        source.contains((element as FubukiPlayer).asMojangPlayer())
 
     override fun isEmpty(): Boolean = source.isEmpty()
 

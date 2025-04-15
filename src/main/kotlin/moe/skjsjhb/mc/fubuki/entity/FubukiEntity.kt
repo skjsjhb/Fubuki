@@ -5,6 +5,8 @@ import moe.skjsjhb.mc.fubuki.interop.toNamespacedKey
 import moe.skjsjhb.mc.fubuki.math.toBukkitVector
 import moe.skjsjhb.mc.fubuki.math.toMojangVec3d
 import moe.skjsjhb.mc.fubuki.metadata.MetadataContainer
+import net.minecraft.entity.projectile.PersistentProjectileEntity
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.Registries
 import org.bukkit.*
 import org.bukkit.block.BlockFace
@@ -137,13 +139,14 @@ open class FubukiEntity(
 
     override fun getWidth(): Double = delegate.width.toDouble()
 
-    override fun getBoundingBox(): BoundingBox {
-        TODO("Not yet implemented")
-    }
+    override fun getBoundingBox(): BoundingBox =
+        delegate.boundingBox.run {
+            BoundingBox(minX, minY, minZ, maxX, maxY, maxZ)
+        }
 
-    override fun isOnGround(): Boolean =
-        // TODO handle arrows
-        delegate.isOnGround
+    // CraftBukkit only checks arrows, while we check for all possible projectiles extending such class
+    // (However, I still believe that this method is quite unreliable...)
+    override fun isOnGround(): Boolean = (delegate as? PersistentProjectileEntity)?.isInGround ?: delegate.isOnGround
 
     override fun isInWater(): Boolean = delegate.isTouchingWater
 
@@ -171,9 +174,10 @@ open class FubukiEntity(
         TODO("Not yet implemented")
     }
 
-    override fun getNearbyEntities(x: Double, y: Double, z: Double): MutableList<Entity> {
-        TODO("Not yet implemented")
-    }
+    override fun getNearbyEntities(x: Double, y: Double, z: Double): MutableList<Entity> =
+        delegate.world.getOtherEntities(delegate, delegate.boundingBox.expand(x, y, z))
+            .map { it.toBukkit() }
+            .toMutableList()
 
     override fun getEntityId(): Int = delegate.id
 
@@ -307,17 +311,16 @@ open class FubukiEntity(
         TODO("Not yet implemented")
     }
 
-    override fun isInsideVehicle(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isInsideVehicle(): Boolean = delegate.hasVehicle()
 
     override fun leaveVehicle(): Boolean {
-        TODO("Not yet implemented")
+        if (!isInsideVehicle()) return false
+
+        delegate.stopRiding()
+        return true
     }
 
-    override fun getVehicle(): Entity? {
-        TODO("Not yet implemented")
-    }
+    override fun getVehicle(): Entity? = delegate.vehicle?.toBukkit()
 
     override fun isCustomNameVisible(): Boolean = delegate.isCustomNameVisible
 
@@ -401,7 +404,9 @@ open class FubukiEntity(
     }
 
     override fun getAsString(): String? {
-        TODO("Not yet implemented")
+        val nbt = NbtCompound()
+        if (!delegate.saveSelfNbt(nbt)) return null
+        return nbt.toString()
     }
 
     override fun createSnapshot(): EntitySnapshot? {

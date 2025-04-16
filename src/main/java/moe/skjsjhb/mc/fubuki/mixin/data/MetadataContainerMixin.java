@@ -1,6 +1,6 @@
-package moe.skjsjhb.mc.fubuki.mixin.metadata;
+package moe.skjsjhb.mc.fubuki.mixin.data;
 
-import moe.skjsjhb.mc.fubuki.metadata.MetadataContainer;
+import moe.skjsjhb.mc.fubuki.data.MetadataContainer;
 import net.minecraft.entity.Entity;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;

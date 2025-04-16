@@ -1,10 +1,12 @@
 package moe.skjsjhb.mc.fubuki.entity
 
+import moe.skjsjhb.mc.fubuki.data.FubukiPDC
+import moe.skjsjhb.mc.fubuki.data.MetadataContainer
+import moe.skjsjhb.mc.fubuki.data.PDCBinder
 import moe.skjsjhb.mc.fubuki.interop.assumeBukkit
 import moe.skjsjhb.mc.fubuki.interop.toNamespacedKey
 import moe.skjsjhb.mc.fubuki.math.toBukkitVector
 import moe.skjsjhb.mc.fubuki.math.toMojangVec3d
-import moe.skjsjhb.mc.fubuki.metadata.MetadataContainer
 import net.minecraft.entity.projectile.PersistentProjectileEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.Registries
@@ -27,8 +29,15 @@ import kotlin.jvm.optionals.getOrNull
 
 @Suppress("OVERRIDE_DEPRECATION", "REMOVAL")
 open class FubukiEntity(
-    protected open val delegate: net.minecraft.entity.Entity
+    entity: net.minecraft.entity.Entity
 ) : Entity {
+    protected open val delegate = entity
+    private val persistentDataContainer = FubukiPDC()
+
+    init {
+        (entity as PDCBinder).`fubuki$bindPDC`(persistentDataContainer)
+    }
+
     open fun toMojang(): net.minecraft.entity.Entity = delegate
 
     override fun setMetadata(metadataKey: String, newMetadataValue: MetadataValue) {
@@ -117,9 +126,7 @@ open class FubukiEntity(
         TODO("Not yet implemented")
     }
 
-    override fun getPersistentDataContainer(): PersistentDataContainer {
-        TODO("Not yet implemented")
-    }
+    override fun getPersistentDataContainer(): PersistentDataContainer = persistentDataContainer
 
     override fun getLocation(): Location {
         TODO("Not yet implemented")

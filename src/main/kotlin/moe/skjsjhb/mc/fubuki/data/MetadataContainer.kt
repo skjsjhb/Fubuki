@@ -1,8 +1,9 @@
-package moe.skjsjhb.mc.fubuki.metadata
+package moe.skjsjhb.mc.fubuki.data
 
 import org.bukkit.metadata.MetadataValue
 import org.bukkit.plugin.Plugin
 
+@Suppress("FunctionName")
 interface MetadataContainer {
     fun `fubuki$setMetadata`(k: String, v: MetadataValue)
 

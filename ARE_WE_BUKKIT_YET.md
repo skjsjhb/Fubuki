@@ -47,7 +47,10 @@
 
   - Only available for entities.
 
-- **Persistent Data Container** :x:
+- **Persistent Data Container** :o:
+
+  - Only available for entities.
+  - Data are stored using Java object serialization framework instead of NBT tags.
 
 ### Entity
 

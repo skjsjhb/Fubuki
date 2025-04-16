@@ -1,5 +1,6 @@
 package moe.skjsjhb.mc.fubuki
 
+import moe.skjsjhb.mc.fubuki.event.PlayerEventInit
 import moe.skjsjhb.mc.fubuki.schedule.ServerThreadExecutor
 import moe.skjsjhb.mc.fubuki.server.ServerInit
 import net.fabricmc.api.ModInitializer
@@ -16,5 +17,6 @@ object Fubuki : ModInitializer {
 
         ServerThreadExecutor.init()
         ServerInit.init()
+        PlayerEventInit.init()
     }
 }

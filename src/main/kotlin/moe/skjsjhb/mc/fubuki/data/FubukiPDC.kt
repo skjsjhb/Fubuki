@@ -1,14 +1,17 @@
 package moe.skjsjhb.mc.fubuki.data
 
-import net.jpountz.lz4.LZ4FrameInputStream
-import net.jpountz.lz4.LZ4FrameOutputStream
+import kotlinx.serialization.json.*
+import moe.skjsjhb.mc.fubuki.data.FubukiPDC.Companion.loadFromJson
 import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 import org.slf4j.LoggerFactory
-import java.io.*
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import java.util.concurrent.ConcurrentHashMap
+
+private val logger = LoggerFactory.getLogger("Fubuki")
 
 /**
  * An implementation of [PersistentDataContainer].
@@ -16,10 +19,10 @@ import java.util.concurrent.ConcurrentHashMap
  * Unlike the implementation in CraftBukkit, Fubuki uses a much simpler serialization approach based on
  * [ObjectInputStream] and [ObjectOutputStream]. This may bring some performance overhead but should be negligible.
  */
-class FubukiPDC : PersistentDataContainer, Serializable {
+class FubukiPDC : PersistentDataContainer {
     companion object {
-        private val logger = LoggerFactory.getLogger("Fubuki")
-        private const val serialVersionUID = 2L
+        fun loadFromJsonString(src: String) = FubukiPDC().apply { applyFromJsonString(src) }
+        fun loadFromJson(v: JsonObject): FubukiPDC = FubukiPDC().apply { applyFromJson(v) }
     }
 
     private val data = ConcurrentHashMap<String, Any>() // Must pick a serializable type
@@ -66,31 +69,129 @@ class FubukiPDC : PersistentDataContainer, Serializable {
 
     override fun getAdapterContext(): PersistentDataAdapterContext = FubukiPersistentDataAdapterContext
 
-    fun saveAsByteArray(): ByteArray? {
-        runCatching {
-            val bos = ByteArrayOutputStream()
-            ObjectOutputStream(LZ4FrameOutputStream(bos)).use {
-                it.writeObject(data)
-            }
-            return bos.toByteArray()
-        }.onFailure {
-            logger.error("Failed to write PDC data", it)
-        }
+    fun saveAsJson(): JsonElement = JsonObject(
+        data.mapValues { (_, v) -> toJson(v) }
+            .filterValues { it != null }
+            .mapValues { (_, v) -> v!! }
+    )
 
-        return null
+    fun saveAsJsonString() = Json.encodeToString(saveAsJson())
+
+    private fun applyFromJson(v: JsonObject) {
+        data.putAll(
+            v.mapValues { (_, v) -> fromJson(v) }
+                .filterValues { it != null }
+                .mapValues { (_, v) -> v!! }
+        )
     }
 
-    @Suppress("UNCHECKED_CAST")
-    fun loadFromByteArray(src: ByteArray) {
-        runCatching {
-            ObjectInputStream(LZ4FrameInputStream(ByteArrayInputStream(src))).use {
-                data.putAll(it.readObject() as Map<String, Any>)
-            }
-        }.onFailure {
-            logger.error("Failed to load PDC data", it)
-        }
+    fun applyFromJsonString(src: String) {
+        applyFromJson(Json.parseToJsonElement(src).jsonObject)
     }
 }
+
+@Suppress("UNCHECKED_CAST")
+private fun toJson(v: Any?): JsonElement? =
+    when (v) {
+        is Byte -> JsonPrimitive("B${v.toString(16)}")
+        is Short -> JsonPrimitive("S${v.toString(16)}")
+        is Int -> JsonPrimitive(v)
+        is Long -> JsonPrimitive("L${v.toString(16)}")
+        is Float -> JsonPrimitive("F$v")
+        is Double -> JsonPrimitive("D$v")
+        is Boolean -> JsonPrimitive(v)
+        is String -> JsonPrimitive("!$v")
+        is ByteArray -> JsonObject(
+            mapOf(
+                "T" to JsonPrimitive("B"),
+                "V" to JsonArray(v.map { JsonPrimitive(it) })
+            )
+        )
+
+        is IntArray -> JsonObject(
+            mapOf(
+                "T" to JsonPrimitive("I"),
+                "V" to JsonArray(v.map { JsonPrimitive(it) })
+            )
+        )
+
+        is LongArray -> JsonObject(
+            mapOf(
+                "T" to JsonPrimitive("L"),
+                "V" to JsonArray(v.map { JsonPrimitive(it) })
+            )
+        )
+
+        is FubukiPDC -> JsonObject(
+            mapOf(
+                "T" to JsonPrimitive("C"),
+                "V" to v.saveAsJson()
+            )
+        )
+
+        is List<*> -> JsonArray(
+            v.mapNotNull { toJson(it) }
+        )
+
+        else -> {
+            if (v is Array<*> && v.all { it is FubukiPDC }) {
+                JsonObject(
+                    mapOf(
+                        "T" to JsonPrimitive("CA"),
+                        "V" to JsonArray((v as Array<FubukiPDC>).map { it.saveAsJson() })
+                    )
+                )
+            } else {
+                if (v != null) {
+                    logger.warn("Ignoring unserializable type in PDC: {}", v::class.java.name)
+                } else {
+                    logger.warn("Ignoring null value in PDC")
+                }
+
+                null
+            }
+        }
+    }
+
+private fun fromJson(v: JsonElement): Any? =
+    if (v is JsonPrimitive) {
+        if (v.isString) {
+            val header = v.content.first()
+            val rest = v.content.drop(1)
+            when (header) {
+                'B' -> rest.toByte(16)
+                'S' -> rest.toShort(16)
+                'L' -> rest.toLong(16)
+                'F' -> rest.toFloat()
+                'D' -> rest.toDouble()
+                '!' -> rest
+                else -> {
+                    logger.warn("Unrecognized PDC value header: {}", header)
+                    null
+                }
+            }
+        } else {
+            v.booleanOrNull ?: v.intOrNull
+        }
+    } else if (v is JsonArray) {
+        // List
+        v.mapNotNull { fromJson(it) }.toMutableList()
+    } else if (v is JsonObject) {
+        val type = v["T"]?.jsonPrimitive?.content
+        val value = v["V"]!!
+        when (type) {
+            "B" -> value.jsonArray.mapNotNull { it.jsonPrimitive.intOrNull?.toByte() }.toByteArray()
+            "I" -> value.jsonArray.mapNotNull { it.jsonPrimitive.intOrNull }.toIntArray()
+            "L" -> value.jsonArray.mapNotNull { it.jsonPrimitive.intOrNull?.toLong() }.toLongArray()
+            "C" -> loadFromJson(value.jsonObject)
+            "CA" -> value.jsonArray.map { loadFromJson(it.jsonObject) }.toTypedArray()
+            else -> {
+                logger.warn("Unrecognized PDC object header: {}", type)
+                null
+            }
+        }
+    } else null
+
 
 private object FubukiPersistentDataAdapterContext : PersistentDataAdapterContext {
     override fun newPersistentDataContainer(): PersistentDataContainer = FubukiPDC()

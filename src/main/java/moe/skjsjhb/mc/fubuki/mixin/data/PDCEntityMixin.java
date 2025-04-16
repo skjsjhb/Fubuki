@@ -21,24 +21,22 @@ public abstract class PDCEntityMixin implements PDCBinder {
     // Native entities are created earlier than PDC object
     // The NBT for loading is dropped once loaded
     // We should extract the data and ref it here
-    private byte[] fubukiPDCData = null;
+    private String fubukiPDCData = null;
 
     @Inject(method = "writeNbt", at = @At("RETURN"))
     public void savePDCData(NbtCompound nbt, CallbackInfoReturnable<NbtCompound> cir) {
         if (fubukiPDC != null && !fubukiPDC.isEmpty()) {
-            fubukiPDCData = fubukiPDC.saveAsByteArray();
-            if (fubukiPDCData != null) {
-                nbt.putByteArray("FubukiPDC", fubukiPDCData);
-            }
+            fubukiPDCData = fubukiPDC.saveAsJsonString();
+            nbt.putString("FubukiPDCJson", fubukiPDCData);
         }
     }
 
     @Inject(method = "readNbt", at = @At("HEAD"))
     public void loadPDCData(NbtCompound nbt, CallbackInfo ci) {
-        nbt.getByteArray("FubukiPDC").ifPresent(ba -> {
-            fubukiPDCData = ba;
+        nbt.getString("FubukiPDCJson").ifPresent(src -> {
+            fubukiPDCData = src;
             if (fubukiPDC != null) {
-                fubukiPDC.loadFromByteArray(ba);
+                fubukiPDC.applyFromJsonString(src);
             }
         });
     }
@@ -53,7 +51,7 @@ public abstract class PDCEntityMixin implements PDCBinder {
             fubukiPDC.copyTo(pdc, true);
         } else {
             if (fubukiPDCData != null) {
-                pdc.loadFromByteArray(fubukiPDCData);
+                pdc.applyFromJsonString(fubukiPDCData);
                 fubukiPDCData = null; // The data can be dropped once it has been redeemed
             }
         }

@@ -1,6 +1,6 @@
 # Are We Bukkit Yet?
 
-> Well, not. Not even close.
+> Well, no, but it's now better than nothing.
 
 > [!CAUTION]
 > Fubuki is at a very early stage and does not really do anything more than executing the plugin lifecycle methods.  
@@ -48,7 +48,7 @@
 
 - **Persistent Data Container** :o:
   - Only available for entities.
-  - Data are stored using Java object serialization framework instead of NBT tags.
+  - Data are stored using JSON instead of NBT tags.
 
 ### Entity
 

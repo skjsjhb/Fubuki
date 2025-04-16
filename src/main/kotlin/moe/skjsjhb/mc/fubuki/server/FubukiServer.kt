@@ -8,6 +8,7 @@ import moe.skjsjhb.mc.fubuki.schedule.FubukiScheduler
 import moe.skjsjhb.mc.fubuki.services.FubukiServicesManager
 import moe.skjsjhb.mc.fubuki.util.Slf4jBridgedLogger
 import moe.skjsjhb.mc.fubuki.util.Versions
+import net.minecraft.server.command.ReloadCommand
 import net.minecraft.server.dedicated.MinecraftDedicatedServer
 import org.bukkit.*
 import org.bukkit.advancement.Advancement
@@ -124,13 +125,11 @@ class FubukiServer(
     override fun isLoggingIPs(): Boolean =
         nativeServer.shouldLogIps()
 
-    override fun getInitialEnabledPacks(): MutableList<String> {
-        TODO("Not yet implemented")
-    }
+    override fun getInitialEnabledPacks(): MutableList<String> =
+        nativeServer.properties.dataPackSettings.enabled
 
-    override fun getInitialDisabledPacks(): MutableList<String> {
-        TODO("Not yet implemented")
-    }
+    override fun getInitialDisabledPacks(): MutableList<String> =
+        nativeServer.properties.dataPackSettings.disabled
 
     override fun getDataPackManager(): DataPackManager {
         TODO("Not yet implemented")
@@ -286,17 +285,22 @@ class FubukiServer(
     }
 
     override fun reloadData() {
-        TODO("Not yet implemented")
+        val packs = ReloadCommand.findNewDataPacks(
+            nativeServer.dataPackManager,
+            nativeServer.saveProperties,
+            nativeServer.dataPackManager.enabledIds
+        )
+
+        nativeServer.reloadResources(packs)
     }
 
     override fun getLogger(): Logger = logger
 
-    override fun getPluginCommand(name: String): PluginCommand? {
-        TODO("Not yet implemented")
-    }
+    override fun getPluginCommand(name: String): PluginCommand? =
+        commandMap.getCommand(name) as? PluginCommand
 
     override fun savePlayers() {
-        TODO("Not yet implemented")
+        nativeServer.playerManager.saveAllPlayerData()
     }
 
     override fun dispatchCommand(sender: CommandSender, commandLine: String): Boolean {
@@ -482,9 +486,7 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    override fun getMaxChainedNeighborUpdates(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getMaxChainedNeighborUpdates(): Int = nativeServer.maxChainedNeighborUpdates
 
     override fun getMonsterSpawnLimit(): Int {
         TODO("Not yet implemented")
@@ -527,6 +529,7 @@ class FubukiServer(
     }
 
     override fun getShutdownMessage(): String? {
+        // This should be loaded from Bukkit configuration
         TODO("Not yet implemented")
     }
 
@@ -562,12 +565,10 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    override fun getIdleTimeout(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getIdleTimeout(): Int = nativeServer.playerIdleTimeout
 
     override fun setIdleTimeout(threshold: Int) {
-        TODO("Not yet implemented")
+        nativeServer.playerIdleTimeout = threshold
     }
 
     override fun getPauseWhenEmptyTime(): Int = nativeServer.pauseWhenEmptySeconds
@@ -607,7 +608,11 @@ class FubukiServer(
     }
 
     override fun getEntity(uuid: UUID): Entity? {
-        TODO("Not yet implemented")
+        nativeServer.worlds.forEach {
+            it.getEntity(uuid)?.let { return it.toBukkit() }
+        }
+
+        return null
     }
 
     override fun getAdvancement(key: NamespacedKey): Advancement? {

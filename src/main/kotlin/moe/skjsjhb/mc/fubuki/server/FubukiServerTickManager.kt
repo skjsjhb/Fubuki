@@ -1,5 +1,6 @@
 package moe.skjsjhb.mc.fubuki.server
 
+import moe.skjsjhb.mc.fubuki.entity.FubukiEntity
 import org.bukkit.ServerTickManager
 import org.bukkit.entity.Entity
 
@@ -13,10 +14,8 @@ class FubukiServerTickManager(private val delegate: net.minecraft.server.ServerT
 
     override fun isFrozen(): Boolean = delegate.isFrozen
 
-    override fun isFrozen(entity: Entity): Boolean {
-        // TODO must implement Bukkit-Mojang entity casting first
-        TODO("Not yet implemented")
-    }
+    override fun isFrozen(entity: Entity): Boolean =
+        delegate.shouldSkipTick((entity as FubukiEntity).toMojang())
 
     override fun setFrozen(frozen: Boolean) {
         delegate.isFrozen = frozen

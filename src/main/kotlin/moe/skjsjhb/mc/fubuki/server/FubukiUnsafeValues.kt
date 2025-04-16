@@ -57,11 +57,11 @@ class FubukiUnsafeValues : UnsafeValues {
     }
 
     override fun checkSupported(pdf: PluginDescriptionFile?) {
-        // TODO perform checks to filter out API-incompatible plugins
+        // This is a no-op as API stability cannot be guaranteed on a modding platform
     }
 
     override fun processClass(pdf: PluginDescriptionFile?, path: String?, clazz: ByteArray?): ByteArray {
-        // TODO figure out how to process classes
+        // Seems related to API version transforming (won't be supported by Fubuki as it's very unstable)
         return clazz ?: ByteArray(0)
     }
 

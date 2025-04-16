@@ -10,3 +10,4 @@ accessible field net/minecraft/server/dedicated/ServerPropertiesHandler$WorldGen
 accessible method net/minecraft/entity/Entity getBurningDuration ()I
 accessible method net/minecraft/entity/projectile/PersistentProjectileEntity isInGround ()Z
 accessible field net/minecraft/server/network/ServerLoginNetworkHandler connection Lnet/minecraft/network/ClientConnection;
+accessible method net/minecraft/server/command/ReloadCommand findNewDataPacks (Lnet/minecraft/resource/ResourcePackManager;Lnet/minecraft/world/SaveProperties;Ljava/util/Collection;)Ljava/util/Collection;

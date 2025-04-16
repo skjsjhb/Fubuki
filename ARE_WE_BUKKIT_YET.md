@@ -28,6 +28,8 @@
 - **Plugin Loading** :white_check_mark:
   - Plugin API version compatibility is not checked due to the fact that Fabric can be installed for snapshots. The API
     stability cannot be guaranteed, making the check pointless.
+  - Plugin remapping (class bytecode converting) won't be supported. Please always use a plugin designed for the current
+    version.
 
 - **Plugin Resource Files** :white_check_mark:
 

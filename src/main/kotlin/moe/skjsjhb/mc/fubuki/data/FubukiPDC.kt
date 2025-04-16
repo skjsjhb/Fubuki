@@ -72,7 +72,7 @@ class FubukiPDC : PersistentDataContainer, Serializable {
             ObjectOutputStream(LZ4FrameOutputStream(bos)).use {
                 it.writeObject(data)
             }
-            return bos.toByteArray().also { logger.info("PDC data size: ${it.size}") }
+            return bos.toByteArray()
         }.onFailure {
             logger.error("Failed to write PDC data", it)
         }

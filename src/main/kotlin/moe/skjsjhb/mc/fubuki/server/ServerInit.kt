@@ -1,6 +1,5 @@
 package moe.skjsjhb.mc.fubuki.server
 
-import moe.skjsjhb.mc.fubuki.interop.assumeBukkit
 import moe.skjsjhb.mc.fubuki.schedule.FubukiTask
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.server.dedicated.MinecraftDedicatedServer
@@ -38,14 +37,14 @@ object ServerInit {
         }
 
         ServerLifecycleEvents.SERVER_STOPPING.register {
-            it.assumeBukkit<FubukiServer>().pluginLifecycleManager.onShutdown()
+            it.toFubuki().pluginLifecycleManager.onShutdown()
 
             // FIXME don't wait forever
             FubukiTask.waitAsyncTasks(Long.MAX_VALUE, TimeUnit.DAYS)
         }
 
         ServerLifecycleEvents.SERVER_STARTED.register {
-            it.assumeBukkit<FubukiServer>().pluginLifecycleManager.run {
+            it.toFubuki().pluginLifecycleManager.run {
                 onPostWorld()
                 onStarted()
             }

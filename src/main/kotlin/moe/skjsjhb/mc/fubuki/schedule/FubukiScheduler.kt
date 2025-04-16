@@ -98,6 +98,10 @@ class FubukiScheduler(private val nativeServer: MinecraftServer) : BukkitSchedul
     override fun scheduleAsyncRepeatingTask(plugin: Plugin, task: Runnable, delay: Long, period: Long): Int =
         runTaskTimerAsynchronously(plugin, task, delay, period).taskId
 
+    fun runOnMainThread(fn: () -> Unit) {
+        serverExecutor.execute(fn)
+    }
+
     override fun <T : Any?> callSyncMethod(plugin: Plugin, task: Callable<T>): Future<T> {
         val ft = CompletableFuture<T>()
         serverExecutor.execute {

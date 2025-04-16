@@ -54,11 +54,13 @@ import kotlin.math.abs
  */
 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
 class FubukiServer(
-    val nativeServer: MinecraftDedicatedServer
+    private val nativeServer: MinecraftDedicatedServer
 ) : Server {
     init {
         (nativeServer as BukkitRef).`fubuki$setRef`(this)
     }
+
+    fun toMojang() = nativeServer
 
     private val logger = Slf4jBridgedLogger("Bukkit")
     private val commandMap = SimpleCommandMap(this)
@@ -657,4 +659,15 @@ class FubukiServer(
     }
 
     override fun getUnsafe(): UnsafeValues = unsafeValues
+
+    /**
+     * Executes the specified function on the main server thread.
+     */
+    fun runOnMainThread(fn: () -> Unit) {
+        if (isPrimaryThread) {
+            fn()
+        } else {
+            scheduler.runOnMainThread(fn)
+        }
+    }
 }

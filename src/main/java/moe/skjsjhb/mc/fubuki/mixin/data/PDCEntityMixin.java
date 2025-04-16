@@ -27,7 +27,9 @@ public abstract class PDCEntityMixin implements PDCBinder {
     public void savePDCData(NbtCompound nbt, CallbackInfoReturnable<NbtCompound> cir) {
         if (fubukiPDC != null && !fubukiPDC.isEmpty()) {
             fubukiPDCData = fubukiPDC.saveAsByteArray();
-            nbt.putByteArray("FubukiPDC", fubukiPDCData);
+            if (fubukiPDCData != null) {
+                nbt.putByteArray("FubukiPDC", fubukiPDCData);
+            }
         }
     }
 

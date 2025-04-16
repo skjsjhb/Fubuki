@@ -1,9 +1,13 @@
 package moe.skjsjhb.mc.fubuki.data
 
+import net.jpountz.lz4.LZ4Factory
+import net.jpountz.lz4.LZ4FrameInputStream
+import net.jpountz.lz4.LZ4FrameOutputStream
 import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
+import org.slf4j.LoggerFactory
 import java.io.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -15,6 +19,10 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class FubukiPDC : PersistentDataContainer, Serializable {
     companion object {
+        private val lz4Factory = LZ4Factory.fastestJavaInstance()
+        private val lz4Compressor = lz4Factory.fastCompressor()
+        private val lz4Decompressor = lz4Factory.safeDecompressor()
+        private val logger = LoggerFactory.getLogger("Fubuki")
         private const val serialVersionUID = 1L
     }
 
@@ -62,17 +70,28 @@ class FubukiPDC : PersistentDataContainer, Serializable {
 
     override fun getAdapterContext(): PersistentDataAdapterContext = FubukiPersistentDataAdapterContext
 
-    fun saveAsByteArray(): ByteArray {
-        val bos = ByteArrayOutputStream()
-        ObjectOutputStream(bos).use {
-            it.writeObject(this)
+    fun saveAsByteArray(): ByteArray? {
+        runCatching {
+            val bos = ByteArrayOutputStream()
+            ObjectOutputStream(LZ4FrameOutputStream(bos)).use {
+                it.writeObject(data)
+            }
+            return bos.toByteArray().also { logger.info("PDC data size: ${it.size}") }
+        }.onFailure {
+            logger.error("Failed to write PDC data", it)
         }
-        return bos.toByteArray()
+
+        return null
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun loadFromByteArray(src: ByteArray) {
-        ObjectInputStream(ByteArrayInputStream(src)).use {
-            data.putAll((it.readObject() as FubukiPDC).data)
+        runCatching {
+            ObjectInputStream(LZ4FrameInputStream(ByteArrayInputStream(src))).use {
+                data.putAll(it.readObject() as Map<String, Any>)
+            }
+        }.onFailure {
+            logger.error("Failed to load PDC data", it)
         }
     }
 }

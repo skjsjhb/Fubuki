@@ -1,6 +1,5 @@
 package moe.skjsjhb.mc.fubuki.data
 
-import net.jpountz.lz4.LZ4Factory
 import net.jpountz.lz4.LZ4FrameInputStream
 import net.jpountz.lz4.LZ4FrameOutputStream
 import org.bukkit.NamespacedKey
@@ -19,11 +18,8 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class FubukiPDC : PersistentDataContainer, Serializable {
     companion object {
-        private val lz4Factory = LZ4Factory.fastestJavaInstance()
-        private val lz4Compressor = lz4Factory.fastCompressor()
-        private val lz4Decompressor = lz4Factory.safeDecompressor()
         private val logger = LoggerFactory.getLogger("Fubuki")
-        private const val serialVersionUID = 1L
+        private const val serialVersionUID = 2L
     }
 
     private val data = ConcurrentHashMap<String, Any>() // Must pick a serializable type

@@ -9,3 +9,4 @@ accessible field net/minecraft/server/dedicated/ServerPropertiesHandler worldGen
 accessible field net/minecraft/server/dedicated/ServerPropertiesHandler$WorldGenProperties levelType Ljava/lang/String;
 accessible method net/minecraft/entity/Entity getBurningDuration ()I
 accessible method net/minecraft/entity/projectile/PersistentProjectileEntity isInGround ()Z
+accessible field net/minecraft/server/network/ServerLoginNetworkHandler connection Lnet/minecraft/network/ClientConnection;

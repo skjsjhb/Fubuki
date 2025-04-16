@@ -5,6 +5,9 @@
     "mixins": [
         "data.MetadataContainerMixin",
         "data.PDCEntityMixin",
+        "network.ClientConnectionHostnameMixin",
+        "network.HostnameInHandshakeMixin",
+        "player.PlayerLoginEventMixin",
         "util.BukkitRefMixin"
     ],
     "injectors": {

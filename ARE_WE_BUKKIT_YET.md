@@ -26,7 +26,6 @@
 ### Plugin Management
 
 - **Plugin Loading** :white_check_mark:
-
   - Plugin API version compatibility is not checked due to the fact that Fabric can be installed for snapshots. The API
     stability cannot be guaranteed, making the check pointless.
 
@@ -37,18 +36,15 @@
 - **Server Operations** :hammer:
 
 - **Task Scheduling**: :white_check_mark:
-
   - Cancelling a task does not interrupt invocations already fired (this is by design for stability).
   - Asynchronous tasks run on virtual threads.
 
 ### Data Store
 
 - **Metadata** :o:
-
   - Only available for entities.
 
 - **Persistent Data Container** :o:
-
   - Only available for entities.
   - Data are stored using Java object serialization framework instead of NBT tags.
 
@@ -59,6 +55,13 @@
 ### Player
 
 - **Player Operations** :hammer:
+
+### Events
+
+- **Player Events**:
+  - `PlayerJoinEvent`
+  - `PlayerQuitEvent`
+  - `PlayerLoginEvent`
 
 ---
 

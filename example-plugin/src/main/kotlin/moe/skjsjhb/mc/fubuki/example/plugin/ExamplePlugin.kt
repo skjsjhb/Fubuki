@@ -2,6 +2,7 @@ package moe.skjsjhb.mc.fubuki.example.plugin
 
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerCommandPreprocessEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerLoginEvent
 import org.bukkit.event.player.PlayerQuitEvent
@@ -40,5 +41,12 @@ private object EventListener : Listener {
     @EventHandler
     fun onPlayerLogin(ev: PlayerLoginEvent) {
         println("Player ${ev.player.name} joined with host ${ev.hostname} and address ${ev.address}")
+    }
+
+    @EventHandler
+    fun onPlayerCommand(ev: PlayerCommandPreprocessEvent) {
+        if (ev.message == "say hello") {
+            ev.isCancelled = true
+        }
     }
 }

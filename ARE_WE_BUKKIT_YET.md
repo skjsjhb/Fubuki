@@ -47,7 +47,10 @@
 
 - **Command Manipulation** :ballot_box_with_check:
   - If a command is changed via `PlayerCommandPreprocessEvent`, Fubuki will execute it forcefully, bypassing any
-    signature validation. This can cause two problems:
+    signature validation.
+
+    Such behavior may cause two problems:
+
     - Potential security risks if you rely on such signing behavior.
     - The result of the command will be untrusted, e.g. if a player sends command `/say hello`, and a plugin changes it
       to `/say ciallo`, then the message printed at the client `[UserName] ciallo` will be displayed as unsigned.

@@ -24,6 +24,7 @@
     "mixins": [
         "fubuki.mixins.json"
     ],
+    "accessWidener": "fubuki.accesswidener",
     "depends": {
         "fabricloader": ">=0.16.13",
         "minecraft": "~1.21.5",

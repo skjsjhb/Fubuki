@@ -62,4 +62,11 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
-
+tasks.jar {
+    from(
+        configurations.runtimeClasspath.get()
+            .filter { it.name == project(":bukkit").tasks.jar.get().archiveFileName.get() }
+            .map { zipTree(it) }
+    )
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

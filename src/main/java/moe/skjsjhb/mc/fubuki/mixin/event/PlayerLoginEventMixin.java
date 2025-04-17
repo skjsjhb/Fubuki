@@ -1,4 +1,4 @@
-package moe.skjsjhb.mc.fubuki.mixin.player;
+package moe.skjsjhb.mc.fubuki.mixin.event;
 
 import moe.skjsjhb.mc.fubuki.event.PlayerEventReceivers;
 import net.minecraft.network.ClientConnection;

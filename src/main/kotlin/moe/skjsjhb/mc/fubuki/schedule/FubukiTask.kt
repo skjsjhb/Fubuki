@@ -54,7 +54,7 @@ class FubukiTask(
 
         if (interval >= 0) {
             // If interval is 0 it runs on every tick
-            nextTimeToRun.set(nextTimeToRun.get() + interval + 1)
+            nextTimeToRun.updateAndGet { it + interval + 1 }
             return true
         }
 
@@ -67,19 +67,18 @@ class FubukiTask(
         isRunning.set(true)
 
         if (isSync) {
-            try {
-                command.run()
-            } finally {
-                isRunning.set(false)
-            }
+            doRun()
         } else {
-            virtualExecutor.submit {
-                try {
-                    command.run()
-                } finally {
-                    isRunning.set(false)
-                }
-            }
+            virtualExecutor.submit { doRun() }
+        }
+    }
+
+    private fun doRun() {
+        isRunning.set(true)
+        try {
+            command.run()
+        } finally {
+            isRunning.set(false)
         }
     }
 

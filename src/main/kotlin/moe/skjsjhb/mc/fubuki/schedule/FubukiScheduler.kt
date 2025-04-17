@@ -35,18 +35,18 @@ class FubukiScheduler(private val nativeServer: MinecraftServer) : BukkitSchedul
             override fun run() {
                 while (!tasksQueue.isEmpty()) {
                     val task = tasksQueue.peek() ?: break
-                    if (task.nextTimeToRun.get() <= getTicks()) {
-                        tasksQueue.poll()
-                        task.run()
-                        if (task.possiblyRenew()) {
-                            tasksQueue.offer(task)
-                        } else {
-                            deleteTask(task)
-                        }
+                    if (task.nextTimeToRun.get() > getTicks()) break
+
+                    tasksQueue.poll()
+                    task.run()
+
+                    if (task.possiblyRenew()) {
+                        tasksQueue.offer(task)
                     } else {
-                        break
+                        deleteTask(task)
                     }
                 }
+                
                 serverExecutor.execute(this)
             }
         }

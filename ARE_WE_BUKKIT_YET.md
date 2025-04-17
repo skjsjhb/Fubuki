@@ -43,6 +43,19 @@
   - Cancelling a task does not interrupt invocations already fired (this is by design for stability).
   - Asynchronous tasks run on virtual threads.
 
+### Commands
+
+- **Command Manipulation** :ballot_box_with_check:
+  - If a command is changed via `PlayerCommandPreprocessEvent`, Fubuki will execute it forcefully, bypassing any
+    signature validation. This can cause two problems:
+    - Potential security risks if you rely on such signing behavior.
+    - The result of the command will be untrusted, e.g. if a player sends command `/say hello`, and a plugin changes it
+      to `/say ciallo`, then the message printed at the client `[UserName] ciallo` will be displayed as unsigned.
+
+    This won't happen if the command content is not modified.
+
+- **Plugin Commands** :hammer:
+
 ### Data Store
 
 - **Metadata** :o:
@@ -62,10 +75,11 @@
 
 ### Events
 
-- **Player Events**:
+- **Player Events** :o:
   - `PlayerJoinEvent`
   - `PlayerQuitEvent`
   - `PlayerLoginEvent`
+  - `PlayerCommandPreprocessEvent`
 
 ---
 

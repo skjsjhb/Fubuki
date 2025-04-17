@@ -4,45 +4,49 @@ import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.RegisteredServiceProvider
 import org.bukkit.plugin.ServicePriority
 import org.bukkit.plugin.ServicesManager
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.PriorityBlockingQueue
 
 class FubukiServicesManager : ServicesManager {
-    override fun <T : Any?> register(service: Class<T>, provider: T & Any, plugin: Plugin, priority: ServicePriority) {
-        TODO("Not yet implemented")
+    private val services = ConcurrentHashMap<Class<*>, PriorityBlockingQueue<RegisteredServiceProvider<*>>>()
+
+    override fun <T : Any> register(service: Class<T>, provider: T, plugin: Plugin, priority: ServicePriority) {
+        val rsp = RegisteredServiceProvider(service, provider, priority, plugin)
+        services.getOrPut(service) { PriorityBlockingQueue() }.add(rsp)
     }
 
     override fun unregisterAll(plugin: Plugin) {
-        // TODO unregister services
+        services.values.forEach {
+            it.removeIf { it.plugin == plugin }
+        }
     }
 
     override fun unregister(service: Class<*>, provider: Any) {
-        TODO("Not yet implemented")
+        services[service]?.removeIf { it.provider == provider }
     }
 
     override fun unregister(provider: Any) {
-        TODO("Not yet implemented")
+        services.values.forEach {
+            it.removeIf { it.provider == provider }
+        }
     }
 
-    override fun <T : Any?> load(service: Class<T>): T? {
-        TODO("Not yet implemented")
-    }
+    override fun <T : Any> load(service: Class<T>): T? = getRegistration(service)?.provider
 
-    override fun <T : Any?> getRegistration(service: Class<T>): RegisteredServiceProvider<T>? {
-        TODO("Not yet implemented")
-    }
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : Any> getRegistration(service: Class<T>): RegisteredServiceProvider<T>? =
+        services[service]?.peek() as? RegisteredServiceProvider<T>?
 
-    override fun getRegistrations(plugin: Plugin): MutableList<RegisteredServiceProvider<*>> {
-        TODO("Not yet implemented")
-    }
+    override fun getRegistrations(plugin: Plugin): MutableList<RegisteredServiceProvider<*>> =
+        services.values.flatMap { it.filter { it.plugin == plugin } }.toMutableList()
 
-    override fun <T : Any?> getRegistrations(service: Class<T>): MutableCollection<RegisteredServiceProvider<T>> {
-        TODO("Not yet implemented")
-    }
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : Any?> getRegistrations(service: Class<T>): MutableCollection<RegisteredServiceProvider<T>> =
+        services[service] as? MutableCollection<RegisteredServiceProvider<T>> ?: mutableListOf()
 
-    override fun getKnownServices(): MutableCollection<Class<*>> {
-        TODO("Not yet implemented")
-    }
+    override fun getKnownServices(): MutableCollection<Class<*>> =
+        services.filter { it.value.isNotEmpty() }.map { it.key }.toMutableList()
 
-    override fun <T : Any?> isProvidedFor(service: Class<T>): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun <T : Any> isProvidedFor(service: Class<T>): Boolean =
+        services[service]?.isNotEmpty() == true
 }

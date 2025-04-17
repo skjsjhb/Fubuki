@@ -33,6 +33,8 @@
 
 - **Plugin Resource Files** :white_check_mark:
 
+- **Service Management** :white_check_mark:
+
 ### Server
 
 - **Server Operations** :hammer:

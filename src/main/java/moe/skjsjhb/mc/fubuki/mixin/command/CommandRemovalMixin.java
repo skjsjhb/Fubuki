@@ -14,7 +14,7 @@ import java.util.Map;
  * <p>
  * Mixin is used as access wideners seem not to work with brigadier classes.
  */
-@Mixin(CommandNode.class)
+@Mixin(value = CommandNode.class, remap = false)
 public class CommandRemovalMixin implements CommandRemovable {
     @Shadow
     @Final
@@ -29,8 +29,8 @@ public class CommandRemovalMixin implements CommandRemovable {
     private Map<String, ?> children;
 
     @Override
-    public void fubuki$removeCommand(@NotNull CommandNode<?> node, @NotNull String cmd) {
-        var child = node.getChild(cmd);
+    public void fubuki$removeCommand(@NotNull String cmd) {
+        var child = ((CommandNode<?>) (Object) this).getChild(cmd);
         literals.remove(cmd, child);
         arguments.remove(cmd, child);
         children.remove(cmd, child);

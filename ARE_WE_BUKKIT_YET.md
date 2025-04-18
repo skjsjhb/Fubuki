@@ -45,7 +45,7 @@
 
 ### Commands
 
-- **Command Manipulation** :ballot_box_with_check:
+- **Command Manipulation** :white_check_mark:
   - If a command is changed via `PlayerCommandPreprocessEvent`, Fubuki will execute it forcefully, bypassing any
     signature validation.
 
@@ -55,15 +55,16 @@
     - The result of the command will be untrusted, e.g. if a player sends command `/say hello`, and a plugin changes it
       to `/say ciallo`, then the message printed at the client `[UserName] ciallo` will be displayed as unsigned.
 
-    This won't happen if the command content is not modified.
+    This is unavoidable due to the nature of the signatures.
 
-- **Plugin Command Execution** :ballot_box_with_check:
-  - Namespaces are not supported. A previously registered command is removed when registering another with the same
-    name.
-  - Commands sent from rcon connections will be fired as if they were from server console. This substitution only
-    happens in the plugin world (i.e. it will be run as a rcon command if not handled by plugins).
-
-- **Plugin Command Completion** :white_check_mark:
+- **Plugin Command Handling** :ballot_box_with_check:
+  - Commands added (either by mods or the vanilla game) before the plugins are enabled will be treated as vanilla
+    commands and automatically get aliases with the prefix `minecraft:`. Such behavior will be configurable soon.
+  - Vanilla commands are not added to the Bukkit command map. They can still be invoked normally and shouldn't break
+    the API, though.
+  - Non-player commands are fired as if they were from the server console when handling them in the plugin world,
+    regardless of their actual source (command blocks, rcon, etc.).
+  - Tab completion does not work for server console.
 
 ### Data Store
 

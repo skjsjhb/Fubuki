@@ -11,6 +11,7 @@ import moe.skjsjhb.mc.fubuki.schedule.FubukiScheduler
 import moe.skjsjhb.mc.fubuki.services.FubukiServicesManager
 import moe.skjsjhb.mc.fubuki.util.Slf4jBridgedLogger
 import moe.skjsjhb.mc.fubuki.util.Versions
+import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ReloadCommand
 import net.minecraft.server.dedicated.MinecraftDedicatedServer
 import org.bukkit.*
@@ -673,18 +674,21 @@ class FubukiServer(
 
     fun postSetup() {
         commandMap.setFallbackCommands()
-        commandMap.commands.forEach {
-            FubukiCommand(this, it).let { cmd ->
-                it.aliases
-                    .plus(it.name) // Put the canonical name last
-                    .forEach {
-                        // Delete this alias before adding new command
-                        nativeServer.commandManager.dispatcher.root.let { node ->
-                            (node as CommandRemovable).`fubuki$removeCommand`(node, it)
-                        }
-                        cmd.register(nativeServer.commandManager.dispatcher, it)
-                    }
-            }
+
+        val disp = nativeServer.commandManager.dispatcher
+
+        disp.root.children.toSet().forEach {
+            disp.register(
+                CommandManager.literal("minecraft:" + it.name)
+                    .redirect(it)   // Redirect arguments
+                    .executes(it.command)   // No-arg variant
+            )
+        }
+
+        commandMap.knownCommands.forEach { (name, cmd) ->
+            val fc = FubukiCommand(this, cmd)
+            (disp.root as CommandRemovable).`fubuki$removeCommand`(name)
+            fc.register(disp, name)
         }
     }
 

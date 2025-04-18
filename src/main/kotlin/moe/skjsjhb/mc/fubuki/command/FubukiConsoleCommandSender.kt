@@ -12,30 +12,21 @@ import org.bukkit.permissions.PermissionAttachmentInfo
 import org.bukkit.plugin.Plugin
 import java.util.*
 
+/**
+ * A [ConsoleCommandSender] implementation with permanent privileges.
+ */
 class FubukiConsoleCommandSender(private val delegate: ServerCommandSource) : ConsoleCommandSender {
-    override fun isOp(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isOp(): Boolean = true
 
-    override fun setOp(value: Boolean) {
-        TODO("Not yet implemented")
-    }
+    override fun setOp(value: Boolean) {}
 
-    override fun isPermissionSet(name: String): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isPermissionSet(name: String): Boolean = false
 
-    override fun isPermissionSet(perm: Permission): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isPermissionSet(perm: Permission): Boolean = false
 
-    override fun hasPermission(name: String): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun hasPermission(name: String): Boolean = true
 
-    override fun hasPermission(perm: Permission): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun hasPermission(perm: Permission): Boolean = true
 
     override fun addAttachment(plugin: Plugin, name: String, value: Boolean): PermissionAttachment {
         TODO("Not yet implemented")

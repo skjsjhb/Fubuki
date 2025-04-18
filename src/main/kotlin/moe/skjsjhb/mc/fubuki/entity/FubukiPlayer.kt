@@ -946,7 +946,8 @@ class FubukiPlayer(
     }
 
     override fun canSee(player: Player): Boolean {
-        TODO("Not yet implemented")
+        // TODO filter it
+        return true
     }
 
     override fun canSee(entity: Entity): Boolean {

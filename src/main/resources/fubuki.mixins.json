@@ -3,6 +3,7 @@
     "package": "moe.skjsjhb.mc.fubuki.mixin",
     "compatibilityLevel": "JAVA_21",
     "mixins": [
+        "command.CommandRemovalMixin",
         "command.GeneralCommandInterceptMixin",
         "command.PlayerCommandInterceptMixin",
         "data.MetadataContainerMixin",

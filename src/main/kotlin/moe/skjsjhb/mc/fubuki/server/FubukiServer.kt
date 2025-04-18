@@ -1,5 +1,7 @@
 package moe.skjsjhb.mc.fubuki.server
 
+import moe.skjsjhb.mc.fubuki.command.CommandRemovable
+import moe.skjsjhb.mc.fubuki.command.FubukiCommand
 import moe.skjsjhb.mc.fubuki.command.FubukiConsoleCommandSender
 import moe.skjsjhb.mc.fubuki.entity.toBukkit
 import moe.skjsjhb.mc.fubuki.interop.BukkitRef
@@ -307,6 +309,11 @@ class FubukiServer(
 
     override fun dispatchCommand(sender: CommandSender, commandLine: String): Boolean =
         commandMap.dispatch(sender, commandLine)
+
+    fun requestTabComplete(player: Player, message: String): List<String> {
+        val cmd = if (message.startsWith("/")) message.drop(1) else message
+        return commandMap.tabComplete(player, cmd) ?: emptyList() // TODO support location
+    }
 
     override fun addRecipe(recipe: Recipe?): Boolean {
         TODO("Not yet implemented")
@@ -663,6 +670,23 @@ class FubukiServer(
     }
 
     override fun getUnsafe(): UnsafeValues = unsafeValues
+
+    fun postSetup() {
+        commandMap.setFallbackCommands()
+        commandMap.commands.forEach {
+            FubukiCommand(this, it).let { cmd ->
+                it.aliases
+                    .plus(it.name) // Put the canonical name last
+                    .forEach {
+                        // Delete this alias before adding new command
+                        nativeServer.commandManager.dispatcher.root.let { node ->
+                            (node as CommandRemovable).`fubuki$removeCommand`(node, it)
+                        }
+                        cmd.register(nativeServer.commandManager.dispatcher, it)
+                    }
+            }
+        }
+    }
 
     /**
      * Executes the specified function on the main server thread.

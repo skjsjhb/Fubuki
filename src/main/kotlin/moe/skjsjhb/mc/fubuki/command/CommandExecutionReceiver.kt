@@ -16,12 +16,9 @@ object CommandExecutionReceiver {
         Bukkit.getPluginManager().callEvent(ev)
 
         if (!ev.isCancelled) {
-            val handled = fs.dispatchCommand(fs.consoleSender, ev.command)
-            if (!handled) {
-                // Execute it directly as server commands will bypass signatures anyway
-                val parsed = source.server.commandManager.dispatcher.parse(ev.command, source)
-                source.server.commandManager.execute(parsed, ev.command)
-            }
+            // Proxy such invocation
+            val parsed = source.server.commandManager.dispatcher.parse(ev.command, source)
+            source.server.commandManager.execute(parsed, ev.command)
         }
     }
 
@@ -36,22 +33,15 @@ object CommandExecutionReceiver {
             // This method is already called on the main thread
             Bukkit.getPluginManager().callEvent(ev)
             if (!ev.isCancelled) {
-                // Run command
-                val fs = server.toFubuki()
-                val handled = fs.dispatchCommand(it.toBukkit(), ev.message)
-
-                if (!handled) {
-                    // Not handled, run it natively
-                    if (ev.message == cmd) {
-                        // Run command the native way to preserve signatures
-                        delegateCallback.run()
-                        return // Skips duplicated signature fixup
-                    }
-
-                    // Command changed, drop signatures and run it in raw format
-                    val parsed = server.commandManager.dispatcher.parse(ev.message, source)
-                    server.commandManager.execute(parsed, ev.message)
+                if (ev.message == cmd) {
+                    // Run command the native way to preserve signatures
+                    delegateCallback.run()
+                    return
                 }
+
+                // Command changed, drop signatures and run it in raw format
+                val parsed = server.commandManager.dispatcher.parse(ev.message, source)
+                server.commandManager.execute(parsed, ev.message)
             }
         } ?: delegateCallback.run() // Fallback to the handler
     }

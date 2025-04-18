@@ -5,4 +5,4 @@ api-version: 1.21
 
 commands:
   fubuki:
-    aliases: fb
+    aliases: [ "fb", "op" ]

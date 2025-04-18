@@ -71,11 +71,13 @@ open class FubukiEntity(
     }
 
     override fun hasPermission(name: String): Boolean {
-        TODO("Not yet implemented")
+        // TODO implement permission
+        return true
     }
 
     override fun hasPermission(perm: Permission): Boolean {
-        TODO("Not yet implemented")
+        // TODO implement permission
+        return true
     }
 
     override fun addAttachment(plugin: Plugin, name: String, value: Boolean): PermissionAttachment {

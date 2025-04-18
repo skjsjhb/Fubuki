@@ -25,6 +25,9 @@ class ExamplePlugin : JavaPlugin() {
             logger.info("Received command invocation: $label ${args.joinToString(" ")}")
             true
         }
+        server.getPluginCommand("fubuki")?.setTabCompleter { sender, command, label, args ->
+            listOf("version", "reload")
+        }
     }
 
     override fun onDisable() {

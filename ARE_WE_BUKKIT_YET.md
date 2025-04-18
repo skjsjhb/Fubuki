@@ -58,10 +58,12 @@
     This won't happen if the command content is not modified.
 
 - **Plugin Command Execution** :ballot_box_with_check:
+  - Namespaces are not supported. A previously registered command is removed when registering another with the same
+    name.
   - Commands sent from rcon connections will be fired as if they were from server console. This substitution only
-    happens in the plugin world (i.e. it will be run as rcon command if not handled by plugins).
+    happens in the plugin world (i.e. it will be run as a rcon command if not handled by plugins).
 
-- **Plugin Command Completion** :hammer:
+- **Plugin Command Completion** :white_check_mark:
 
 ### Data Store
 

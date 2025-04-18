@@ -44,10 +44,14 @@ object ServerInit {
         }
 
         ServerLifecycleEvents.SERVER_STARTED.register {
-            it.toFubuki().pluginLifecycleManager.run {
+            val fs = it.toFubuki()
+
+            fs.pluginLifecycleManager.run {
                 onPostWorld()
                 onStarted()
             }
+
+            fs.postSetup()
         }
     }
 }

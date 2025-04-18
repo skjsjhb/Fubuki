@@ -57,7 +57,11 @@
 
     This won't happen if the command content is not modified.
 
-- **Plugin Commands** :hammer:
+- **Plugin Command Execution** :ballot_box_with_check:
+  - Commands sent from rcon connections will be fired as if they were from server console. This substitution only
+    happens in the plugin world (i.e. it will be run as rcon command if not handled by plugins).
+
+- **Plugin Command Completion** :hammer:
 
 ### Data Store
 
@@ -77,6 +81,9 @@
 - **Player Operations** :hammer:
 
 ### Events
+
+- **Server Events** :o:
+  - `ServerCommandEvent`
 
 - **Player Events** :o:
   - `PlayerJoinEvent`

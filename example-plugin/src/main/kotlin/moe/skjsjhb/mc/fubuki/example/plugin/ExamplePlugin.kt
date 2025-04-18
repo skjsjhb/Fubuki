@@ -6,6 +6,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerLoginEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.server.ServerCommandEvent
 import org.bukkit.plugin.java.JavaPlugin
 
 class ExamplePlugin : JavaPlugin() {
@@ -20,6 +21,10 @@ class ExamplePlugin : JavaPlugin() {
         server.maxPlayers = 100
         server.motd = "Fubuki is a Bukkit API translator"
         server.pluginManager.registerEvents(EventListener, this)
+        server.getPluginCommand("fubuki")?.setExecutor { sender, command, label, args ->
+            logger.info("Received command invocation: $label ${args.joinToString(" ")}")
+            true
+        }
     }
 
     override fun onDisable() {
@@ -46,6 +51,13 @@ private object EventListener : Listener {
     @EventHandler
     fun onPlayerCommand(ev: PlayerCommandPreprocessEvent) {
         if (ev.message == "say hello") {
+            ev.isCancelled = true
+        }
+    }
+
+    @EventHandler
+    fun onServerCommand(ev: ServerCommandEvent) {
+        if (ev.command == "say hello") {
             ev.isCancelled = true
         }
     }

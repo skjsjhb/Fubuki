@@ -1,5 +1,6 @@
 package moe.skjsjhb.mc.fubuki.server
 
+import moe.skjsjhb.mc.fubuki.command.FubukiConsoleCommandSender
 import moe.skjsjhb.mc.fubuki.entity.toBukkit
 import moe.skjsjhb.mc.fubuki.interop.BukkitRef
 import moe.skjsjhb.mc.fubuki.ipc.FubukiMessenger
@@ -71,6 +72,7 @@ class FubukiServer(
     private val messenger = FubukiMessenger()
     private val unsafeValues = FubukiUnsafeValues()
     private val serverTickManager = FubukiServerTickManager(nativeServer.tickManager)
+    private val consoleCommandSender = FubukiConsoleCommandSender(nativeServer.commandSource)
 
     private val playerListView by lazy {
         PlayerListView(Collections.unmodifiableList(nativeServer.playerManager.playerList))
@@ -303,9 +305,8 @@ class FubukiServer(
         nativeServer.playerManager.saveAllPlayerData()
     }
 
-    override fun dispatchCommand(sender: CommandSender, commandLine: String): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun dispatchCommand(sender: CommandSender, commandLine: String): Boolean =
+        commandMap.dispatch(sender, commandLine)
 
     override fun addRecipe(recipe: Recipe?): Boolean {
         TODO("Not yet implemented")
@@ -446,9 +447,7 @@ class FubukiServer(
         nativeServer.defaultGameMode = mode.toMojang()
     }
 
-    override fun getConsoleSender(): ConsoleCommandSender {
-        TODO("Not yet implemented")
-    }
+    override fun getConsoleSender(): ConsoleCommandSender = consoleCommandSender
 
     override fun getWorldContainer(): File = File(".")
 

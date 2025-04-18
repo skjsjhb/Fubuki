@@ -3,14 +3,14 @@ package moe.skjsjhb.mc.fubuki.mixin.command;
 import com.mojang.brigadier.ParseResults;
 import moe.skjsjhb.mc.fubuki.command.CommandExecutionReceiver;
 import net.minecraft.command.argument.SignedArgumentList;
-import net.minecraft.network.message.LastSeenMessageList;
-import net.minecraft.network.message.MessageChain;
-import net.minecraft.network.message.SignedMessage;
+import net.minecraft.network.message.*;
 import net.minecraft.network.packet.c2s.play.ChatCommandSignedC2SPacket;
 import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Mixin(ServerPlayNetworkHandler.class)
-public abstract class CommandInterceptMixin {
+public abstract class PlayerCommandInterceptMixin {
     @Shadow
     protected abstract void validateMessage(String message, Runnable callback);
 
@@ -49,34 +49,45 @@ public abstract class CommandInterceptMixin {
     @Shadow
     protected abstract void handleMessageChainException(MessageChain.MessageChainException exception);
 
+    @Shadow
+    @Final
+    private MessageChainTaskQueue messageChainTaskQueue;
+
     // Inject for handling commands from chat message
     // This method must be placed after message validation or the server will reject it
     @Inject(method = "onChatCommandSigned", at = @At("HEAD"), cancellable = true)
     public void interceptChatCommand(ChatCommandSignedC2SPacket packet, CallbackInfo ci) {
-        // Skip argument signature validation
-        validateMessage(packet.command(), () -> {
-            Optional<LastSeenMessageList> lastSeenMessages = validateAcknowledgment(packet.lastSeenMessages());
-            if (lastSeenMessages.isPresent()) {
-                CommandExecutionReceiver.INSTANCE.onClientCommand(
-                        player.server,
-                        player.getCommandSource(),
-                        packet.command(),
-                        () -> {
-                            handleCommandExecution(packet, lastSeenMessages.get());
-                        },
-                        () -> {
-                            ParseResults<ServerCommandSource> parseResults = parse(packet.command());
+        var optionalMsg = validateAcknowledgment(packet.lastSeenMessages());
+        optionalMsg.ifPresent(lastSeenMsg ->
+                validateMessage(packet.command(), () -> {
+                    var parseResults = parse(packet.command());
 
-                            try {
-                                collectArgumentMessages(packet, SignedArgumentList.of(parseResults), lastSeenMessages.get());
-                            } catch (MessageChain.MessageChainException ex) {
-                                handleMessageChainException(ex);
+                    Map<String, SignedMessage> map;
+                    try {
+                        // This is necessary to shut up the server from complaining about signatures
+                        map = collectArgumentMessages(packet, SignedArgumentList.of(parseResults), lastSeenMsg);
+                    } catch (MessageChain.MessageChainException ex) {
+                        handleMessageChainException(ex);
+                        return;
+                    }
+
+                    CommandExecutionReceiver.INSTANCE.onClientCommand(
+                            player.server,
+                            player.getCommandSource(),
+                            packet.command(),
+                            () -> {
+                                var signedCommandArguments = new SignedCommandArguments.Impl(map);
+                                var newParseResults =
+                                        CommandManager.withCommandSource(
+                                                parseResults,
+                                                source -> source.withSignedArguments(signedCommandArguments, messageChainTaskQueue)
+                                        );
+                                player.server.getCommandManager().execute(newParseResults, packet.command());
                             }
-                        }
-                );
-                checkForSpam();
-            }
-        });
+                    );
+                    checkForSpam();
+                })
+        );
         ci.cancel();
     }
 
@@ -88,9 +99,7 @@ public abstract class CommandInterceptMixin {
                     player.server,
                     player.getCommandSource(),
                     packet.command(),
-                    () -> executeCommand(packet.command()),
-                    () -> {
-                    }
+                    () -> executeCommand(packet.command())
             );
             checkForSpam();
         });

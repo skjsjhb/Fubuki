@@ -87,6 +87,9 @@
 
 - **Server Events** :o:
   - `ServerCommandEvent`
+  - `ServerLoadEvent`
+  - `PluginEnableEvent`
+  - `PluginDisableEvent`
 
 - **Player Events** :o:
   - `PlayerJoinEvent`

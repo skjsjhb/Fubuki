@@ -4,6 +4,7 @@ import moe.skjsjhb.mc.fubuki.schedule.FubukiTask
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.server.dedicated.MinecraftDedicatedServer
 import org.bukkit.Bukkit
+import org.bukkit.event.server.ServerLoadEvent
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
@@ -52,6 +53,8 @@ object ServerInit {
             }
 
             fs.postSetup()
+
+            Bukkit.getPluginManager().callEvent(ServerLoadEvent(ServerLoadEvent.LoadType.STARTUP))
         }
     }
 }

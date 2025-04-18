@@ -1,5 +1,8 @@
 package moe.skjsjhb.mc.fubuki.entity
 
+import moe.skjsjhb.mc.fubuki.server.toBukkit
+import moe.skjsjhb.mc.fubuki.server.toMojang
+import moe.skjsjhb.mc.fubuki.util.CraftTextConversion
 import net.minecraft.server.network.ServerPlayerEntity
 import org.bukkit.*
 import org.bukkit.advancement.Advancement
@@ -35,6 +38,22 @@ class FubukiPlayer(
 
     override fun playEffect(loc: Location, effect: Effect, data: Int) {
         TODO("Not yet implemented")
+    }
+
+    override fun sendMessage(message: String) {
+        // TODO
+    }
+
+    override fun sendMessage(vararg messages: String?) {
+        // TODO
+    }
+
+    override fun sendMessage(sender: UUID?, message: String) {
+        // TODO
+    }
+
+    override fun sendMessage(sender: UUID?, vararg messages: String?) {
+        // TODO
     }
 
     override fun <T : Any?> playEffect(loc: Location, effect: Effect, data: T?) {
@@ -157,25 +176,19 @@ class FubukiPlayer(
         TODO("Not yet implemented")
     }
 
-    override fun getGameMode(): GameMode {
-        TODO("Not yet implemented")
-    }
+    override fun getGameMode(): GameMode = delegate.gameMode.toBukkit()
 
     override fun setGameMode(mode: GameMode) {
-        TODO("Not yet implemented")
+        delegate.changeGameMode(mode.toMojang())
     }
 
-    override fun isBlocking(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isBlocking(): Boolean = delegate.isBlocking
 
     override fun isHandRaised(): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun getExpToLevel(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getExpToLevel(): Int = delegate.nextLevelExperience - delegate.totalExperience
 
     override fun getAttackCooldown(): Float {
         TODO("Not yet implemented")
@@ -225,28 +238,22 @@ class FubukiPlayer(
         TODO("Not yet implemented")
     }
 
-    override fun getExhaustion(): Float {
-        TODO("Not yet implemented")
-    }
+    override fun getExhaustion(): Float = delegate.hungerManager.exhaustion
 
     override fun setExhaustion(value: Float) {
-        TODO("Not yet implemented")
+        delegate.hungerManager.exhaustion = value
     }
 
-    override fun getSaturation(): Float {
-        TODO("Not yet implemented")
-    }
+    override fun getSaturation(): Float = delegate.hungerManager.saturationLevel
 
     override fun setSaturation(value: Float) {
-        TODO("Not yet implemented")
+        delegate.hungerManager.saturationLevel = value
     }
 
-    override fun getFoodLevel(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getFoodLevel(): Int = delegate.hungerManager.foodLevel
 
     override fun setFoodLevel(value: Int) {
-        TODO("Not yet implemented")
+        delegate.hungerManager.foodLevel = value
     }
 
     override fun getSaturatedRegenRate(): Int {
@@ -305,21 +312,19 @@ class FubukiPlayer(
         TODO("Not yet implemented")
     }
 
-    override fun sendRawMessage(message: String) {
-        TODO("Not yet implemented")
-    }
+    override fun sendRawMessage(message: String) = sendRawMessage(null, message)
 
     override fun sendRawMessage(sender: UUID?, message: String) {
-        TODO("Not yet implemented")
+        CraftTextConversion.fromString(message).forEach {
+            delegate.sendMessage(it)
+        }
     }
 
     override fun serialize(): MutableMap<String, Any> {
         TODO("Not yet implemented")
     }
 
-    override fun isOnline(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isOnline(): Boolean = !delegate.isDisconnected
 
     override fun getPlayerProfile(): PlayerProfile {
         TODO("Not yet implemented")
@@ -581,20 +586,16 @@ class FubukiPlayer(
         TODO("Not yet implemented")
     }
 
-    override fun isSneaking(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isSneaking(): Boolean = delegate.isSneaking
 
     override fun setSneaking(sneak: Boolean) {
-        TODO("Not yet implemented")
+        delegate.isSneaking = sneak
     }
 
-    override fun isSprinting(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isSprinting(): Boolean = delegate.isSprinting
 
     override fun setSprinting(sprinting: Boolean) {
-        TODO("Not yet implemented")
+        delegate.isSprinting = sprinting
     }
 
     override fun saveData() {

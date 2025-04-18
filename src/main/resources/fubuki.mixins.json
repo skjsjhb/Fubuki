@@ -11,7 +11,8 @@
         "event.PlayerLoginEventMixin",
         "network.ClientConnectionHostnameMixin",
         "network.HostnameInHandshakeMixin",
-        "util.BukkitRefMixin"
+        "util.BukkitRefMixin",
+        "util.TextColorFormatMixin"
     ],
     "injectors": {
         "defaultRequire": 1

@@ -1,5 +1,6 @@
 package moe.skjsjhb.mc.fubuki.example.plugin
 
+import org.bukkit.ChatColor
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
@@ -39,6 +40,9 @@ private object EventListener : Listener {
     @EventHandler
     fun onPlayerJoin(ev: PlayerJoinEvent) {
         println("Player ${ev.player.name} joined!")
+        ev.player.sendRawMessage(
+            "[" + ChatColor.MAGIC + "AAA" + ChatColor.RESET + "] " + ChatColor.GREEN + "Welcome to my server!"
+        )
     }
 
     @EventHandler

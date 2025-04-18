@@ -81,7 +81,8 @@
 
 ### Player
 
-- **Player Operations** :hammer:
+- **Player Messaging** :o:
+  - Conversations are not supported.
 
 ### Events
 

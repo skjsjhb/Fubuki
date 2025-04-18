@@ -7,6 +7,7 @@ import moe.skjsjhb.mc.fubuki.interop.assumeBukkit
 import moe.skjsjhb.mc.fubuki.interop.toNamespacedKey
 import moe.skjsjhb.mc.fubuki.math.toBukkitVector
 import moe.skjsjhb.mc.fubuki.math.toMojangVec3d
+import moe.skjsjhb.mc.fubuki.util.CraftTextConversion
 import net.minecraft.entity.projectile.PersistentProjectileEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.Registries
@@ -120,12 +121,11 @@ open class FubukiEntity(
 
     override fun getName(): String = delegate.nameForScoreboard
 
-    override fun getCustomName(): String? {
-        TODO("Not yet implemented")
-    }
+    override fun getCustomName(): String? =
+        delegate.customName?.let { CraftTextConversion.fromComponent(it) }
 
     override fun setCustomName(name: String?) {
-        TODO("Not yet implemented")
+        delegate.customName = CraftTextConversion.fromStringOrNull(name)
     }
 
     override fun getPersistentDataContainer(): PersistentDataContainer = persistentDataContainer

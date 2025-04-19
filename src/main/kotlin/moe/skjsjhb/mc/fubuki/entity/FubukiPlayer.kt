@@ -1,5 +1,6 @@
 package moe.skjsjhb.mc.fubuki.entity
 
+import moe.skjsjhb.mc.fubuki.conversation.ConversationManager
 import moe.skjsjhb.mc.fubuki.server.toBukkit
 import moe.skjsjhb.mc.fubuki.server.toMojang
 import moe.skjsjhb.mc.fubuki.util.CraftTextConversion
@@ -15,6 +16,7 @@ import org.bukkit.block.data.BlockData
 import org.bukkit.block.sign.Side
 import org.bukkit.conversations.Conversation
 import org.bukkit.conversations.ConversationAbandonedEvent
+import org.bukkit.conversations.ManuallyAbandonedConversationCanceller
 import org.bukkit.entity.*
 import org.bukkit.inventory.*
 import org.bukkit.map.MapView
@@ -34,6 +36,9 @@ import java.util.concurrent.CompletableFuture
 class FubukiPlayer(
     override val delegate: ServerPlayerEntity
 ) : FubukiLivingEntity(delegate), Player {
+
+    private val conversationManager = ConversationManager()
+
     override fun toMojang(): ServerPlayerEntity = delegate
 
     override fun playEffect(loc: Location, effect: Effect, data: Int) {
@@ -41,19 +46,35 @@ class FubukiPlayer(
     }
 
     override fun sendMessage(message: String) {
-        // TODO
+        if (!conversationManager.isConversingInModal()) {
+            sendRawMessage(message)
+        }
     }
 
-    override fun sendMessage(vararg messages: String?) {
-        // TODO
+    override fun sendMessage(vararg messages: String?) { // The nullable flag is added to differ the JVM signature
+        if (!conversationManager.isConversingInModal()) {
+            // Cannot call sendMessage here as it will be parsed as the vararg overload
+            messages.forEach {
+                if (it != null) sendRawMessage(it)
+            }
+        }
     }
 
     override fun sendMessage(sender: UUID?, message: String) {
-        // TODO
+        if (!conversationManager.isConversingInModal()) {
+            sendRawMessage(sender, message)
+        }
     }
 
     override fun sendMessage(sender: UUID?, vararg messages: String?) {
-        // TODO
+        if (!conversationManager.isConversingInModal()) {
+            // Cannot call sendMessage here as it will be parsed as the vararg overload
+            messages.forEach {
+                if (it != null) {
+                    sendRawMessage(sender, it)
+                }
+            }
+        }
     }
 
     override fun <T : Any?> playEffect(loc: Location, effect: Effect, data: T?) {
@@ -190,9 +211,7 @@ class FubukiPlayer(
 
     override fun getExpToLevel(): Int = delegate.nextLevelExperience - delegate.totalExperience
 
-    override fun getAttackCooldown(): Float {
-        TODO("Not yet implemented")
-    }
+    override fun getAttackCooldown(): Float = delegate.getAttackCooldownProgress(0.5f)
 
     override fun discoverRecipe(recipe: NamespacedKey): Boolean {
         TODO("Not yet implemented")
@@ -256,6 +275,7 @@ class FubukiPlayer(
         delegate.hungerManager.foodLevel = value
     }
 
+    // The rest of hunger management methods seem to need mixins
     override fun getSaturatedRegenRate(): Int {
         TODO("Not yet implemented")
     }
@@ -292,24 +312,24 @@ class FubukiPlayer(
         TODO("Not yet implemented")
     }
 
-    override fun isConversing(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isConversing(): Boolean = conversationManager.isConversing()
 
     override fun acceptConversationInput(input: String) {
-        TODO("Not yet implemented")
+        conversationManager.offerInput(input)
     }
 
-    override fun beginConversation(conversation: Conversation): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun beginConversation(conversation: Conversation): Boolean =
+        conversationManager.begin(conversation)
 
     override fun abandonConversation(conversation: Conversation) {
-        TODO("Not yet implemented")
+        abandonConversation(
+            conversation,
+            ConversationAbandonedEvent(conversation, ManuallyAbandonedConversationCanceller())
+        )
     }
 
     override fun abandonConversation(conversation: Conversation, details: ConversationAbandonedEvent) {
-        TODO("Not yet implemented")
+        conversationManager.abandon(conversation, details)
     }
 
     override fun sendRawMessage(message: String) = sendRawMessage(null, message)

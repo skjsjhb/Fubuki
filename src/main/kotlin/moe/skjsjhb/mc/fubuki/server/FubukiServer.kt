@@ -1,5 +1,6 @@
 package moe.skjsjhb.mc.fubuki.server
 
+import com.mojang.authlib.GameProfile
 import moe.skjsjhb.mc.fubuki.command.CommandRemovable
 import moe.skjsjhb.mc.fubuki.command.FubukiCommand
 import moe.skjsjhb.mc.fubuki.command.FubukiConsoleCommandSender
@@ -49,6 +50,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 import java.net.InetAddress
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import java.util.logging.Logger
 import kotlin.jvm.optionals.getOrNull
@@ -76,6 +78,7 @@ class FubukiServer(
     private val unsafeValues = FubukiUnsafeValues()
     private val serverTickManager = FubukiServerTickManager(nativeServer.tickManager)
     private val consoleCommandSender = FubukiConsoleCommandSender(nativeServer.commandSource)
+    private val offlinePlayers = ConcurrentHashMap<UUID, FubukiOfflinePlayer>()
 
     private val playerListView by lazy {
         PlayerListView(Collections.unmodifiableList(nativeServer.playerManager.playerList))
@@ -399,11 +402,39 @@ class FubukiServer(
     }
 
     override fun getOfflinePlayer(name: String): OfflinePlayer {
-        TODO("Not yet implemented")
+        val rp = getPlayerExact(name)
+        if (rp != null) {
+            offlinePlayers.remove(rp.uniqueId)
+            return rp
+        }
+
+        var profile: GameProfile? = null
+        if (onlineMode) {
+            profile = nativeServer.userCache?.findByName(name)?.getOrNull()
+        }
+
+        val p = if (profile == null) {
+            // Make a fake profile
+            val uuid = UUID.nameUUIDFromBytes("OfflinePlayer:$name".toByteArray())
+            FubukiOfflinePlayer(GameProfile(uuid, name), this)
+        } else {
+            FubukiOfflinePlayer(profile, this)
+        }
+
+        offlinePlayers[p.uniqueId] = p
+        return p
     }
 
     override fun getOfflinePlayer(id: UUID): OfflinePlayer {
-        TODO("Not yet implemented")
+        val rp = getPlayer(id)
+        if (rp != null) {
+            offlinePlayers.remove(id)
+            return rp
+        }
+
+        return offlinePlayers.computeIfAbsent(id) {
+            FubukiOfflinePlayer(GameProfile(id, ""), this)
+        }
     }
 
     override fun createPlayerProfile(uniqueId: UUID?, name: String?): PlayerProfile {

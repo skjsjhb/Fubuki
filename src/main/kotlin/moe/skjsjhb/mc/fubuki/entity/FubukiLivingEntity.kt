@@ -1,5 +1,10 @@
 package moe.skjsjhb.mc.fubuki.entity
 
+import net.minecraft.entity.attribute.EntityAttributes
+import net.minecraft.entity.mob.MobEntity
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.server.world.ServerWorld
+import net.minecraft.util.Hand
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Location
 import org.bukkit.Material
@@ -30,23 +35,35 @@ open class FubukiLivingEntity(
     }
 
     override fun damage(amount: Double) {
-        TODO("Not yet implemented")
+        delegate.damage(delegate.world as ServerWorld, delegate.damageSources.generic(), amount.toFloat())
     }
 
     override fun damage(amount: Double, source: Entity?) {
-        TODO("Not yet implemented")
+        val reason = if (source is FubukiPlayer) {
+            delegate.damageSources.playerAttack(source.toMojang())
+        } else if (source is FubukiLivingEntity) {
+            delegate.damageSources.mobAttack(source.toMojang())
+        } else {
+            delegate.damageSources.generic()
+        }
+
+        delegate.damage(delegate.world as ServerWorld, reason, amount.toFloat())
     }
 
     override fun damage(amount: Double, damageSource: DamageSource) {
         TODO("Not yet implemented")
     }
 
-    override fun getHealth(): Double {
-        TODO("Not yet implemented")
-    }
+    override fun getHealth(): Double = delegate.health.toDouble()
 
     override fun setHealth(health: Double) {
-        TODO("Not yet implemented")
+        if (health < 0 || health > maxHealth) return
+
+        delegate.health = health.toFloat()
+
+        if (health <= 0) {
+            delegate.onDeath(delegate.damageSources.generic())
+        }
     }
 
     override fun getAbsorptionAmount(): Double {
@@ -57,16 +74,19 @@ open class FubukiLivingEntity(
         TODO("Not yet implemented")
     }
 
-    override fun getMaxHealth(): Double {
-        TODO("Not yet implemented")
-    }
+    override fun getMaxHealth(): Double = delegate.maxHealth.toDouble()
 
     override fun setMaxHealth(health: Double) {
-        TODO("Not yet implemented")
+        delegate.getAttributeInstance(EntityAttributes.MAX_HEALTH)?.baseValue = health
+
+        if (health > getHealth()) {
+            setHealth(health)
+        }
     }
 
     override fun resetMaxHealth() {
-        TODO("Not yet implemented")
+        delegate.getAttributeInstance(EntityAttributes.MAX_HEALTH)?.attribute?.value()?.defaultValue
+            ?.let { maxHealth = it }
     }
 
     override fun <T : Projectile?> launchProjectile(projectile: Class<out T>): T & Any {
@@ -117,19 +137,17 @@ open class FubukiLivingEntity(
         TODO("Not yet implemented")
     }
 
-    override fun getRemainingAir(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getRemainingAir(): Int =
+        delegate.air
 
     override fun setRemainingAir(ticks: Int) {
-        TODO("Not yet implemented")
+        delegate.air = ticks
     }
 
-    override fun getMaximumAir(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getMaximumAir(): Int = delegate.maxAir
 
     override fun setMaximumAir(ticks: Int) {
+        // This needs a mixin to implement
         TODO("Not yet implemented")
     }
 
@@ -249,68 +267,68 @@ open class FubukiLivingEntity(
         TODO("Not yet implemented")
     }
 
-    override fun isLeashed(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isLeashed(): Boolean =
+        (delegate as? MobEntity)?.isLeashed ?: false
 
     override fun getLeashHolder(): Entity {
-        TODO("Not yet implemented")
+        (delegate as? MobEntity)?.leashHolder?.let {
+            return it.toBukkit()
+        }
+
+        throw IllegalStateException("Entity is not leashed")
     }
 
     override fun setLeashHolder(holder: Entity?): Boolean {
-        TODO("Not yet implemented")
+        (delegate as? MobEntity)?.leashData?.let {
+            it.leashHolder = (holder as FubukiEntity).toMojang()
+            return true
+        }
+        return false
     }
 
-    override fun isGliding(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isGliding(): Boolean = delegate.isGliding
 
     override fun setGliding(gliding: Boolean) {
-        TODO("Not yet implemented")
+        delegate.setFlag(net.minecraft.entity.Entity.GLIDING_FLAG_INDEX, gliding)
     }
 
-    override fun isSwimming(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isSwimming(): Boolean = delegate.isSwimming
 
     override fun setSwimming(swimming: Boolean) {
-        TODO("Not yet implemented")
+        delegate.isSwimming = swimming
     }
 
-    override fun isRiptiding(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isRiptiding(): Boolean =
+        delegate.isUsingRiptide
 
     override fun setRiptiding(riptiding: Boolean) {
-        TODO("Not yet implemented")
+        delegate.setFlag(net.minecraft.entity.LivingEntity.USING_RIPTIDE_FLAG, riptiding)
     }
 
-    override fun isSleeping(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isSleeping(): Boolean = delegate.isSleeping
 
-    override fun isClimbing(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isClimbing(): Boolean = delegate.isClimbing
 
     override fun setAI(ai: Boolean) {
-        TODO("Not yet implemented")
+        (delegate as? MobEntity)?.isAiDisabled = !ai
     }
 
-    override fun hasAI(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun hasAI(): Boolean = if (delegate is MobEntity) !(delegate as MobEntity).isAiDisabled else false
 
     override fun attack(target: Entity) {
-        TODO("Not yet implemented")
+        if (delegate is PlayerEntity) {
+            (delegate as PlayerEntity).attack((target as FubukiEntity).toMojang())
+        } else {
+            delegate.tryAttack(delegate.world as ServerWorld, (target as FubukiEntity).toMojang())
+        }
     }
 
     override fun swingMainHand() {
-        TODO("Not yet implemented")
+        delegate.swingHand(Hand.MAIN_HAND)
     }
 
     override fun swingOffHand() {
-        TODO("Not yet implemented")
+        delegate.swingHand(Hand.OFF_HAND)
     }
 
     override fun playHurtAnimation(yaw: Float) {
@@ -365,19 +383,15 @@ open class FubukiLivingEntity(
         TODO("Not yet implemented")
     }
 
-    override fun canBreatheUnderwater(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun canBreatheUnderwater(): Boolean = delegate.canBreatheInWater()
 
     override fun getCategory(): EntityCategory {
         TODO("Not yet implemented")
     }
 
-    override fun isInvisible(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isInvisible(): Boolean = delegate.isInvisible
 
     override fun setInvisible(invisible: Boolean) {
-        TODO("Not yet implemented")
+        delegate.isInvisible = invisible
     }
 }

@@ -198,12 +198,10 @@ open class FubukiEntity(
 
     override fun getMaxFireTicks(): Int = delegate.burningDuration
 
-    override fun isVisualFire(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isVisualFire(): Boolean = delegate.hasVisualFire
 
     override fun setVisualFire(fire: Boolean) {
-        TODO("Not yet implemented")
+        delegate.hasVisualFire = fire
     }
 
     override fun getFreezeTicks(): Int = delegate.frozenTicks
@@ -392,21 +390,15 @@ open class FubukiEntity(
     override fun removeScoreboardTag(tag: String): Boolean =
         delegate.removeCommandTag(tag)
 
-    override fun getPistonMoveReaction(): PistonMoveReaction {
-        TODO("Not yet implemented")
-    }
+    override fun getPistonMoveReaction(): PistonMoveReaction = delegate.pistonBehavior.toBukkit()
 
-    override fun getFacing(): BlockFace {
-        TODO("Not yet implemented")
-    }
+    override fun getFacing(): BlockFace =
+        delegate.horizontalFacing.toBukkit()
 
-    override fun getPose(): Pose {
-        TODO("Not yet implemented")
-    }
 
-    override fun getSpawnCategory(): SpawnCategory {
-        TODO("Not yet implemented")
-    }
+    override fun getPose(): Pose = delegate.pose.toBukkit()
+
+    override fun getSpawnCategory(): SpawnCategory = delegate.type.spawnGroup.toBukkit()
 
     override fun isInWorld(): Boolean {
         TODO("Not yet implemented")

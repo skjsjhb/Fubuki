@@ -77,12 +77,16 @@
 
 ### Entity
 
-- **Entity Operations** :hammer:
+- **General Entity Operations** :o:
+  - Most state-retrieving methods work. A number of state-setting methods also work.
+  - World-related operations are not supported.
+
+- **Living Entity Operations** :o:
+  - Only the health and damage system works.
 
 ### Player
 
-- **Player Messaging** :o:
-  - Conversations are not supported.
+- **Player Chat Messaging** :white_check_mark:
 
 ### Events
 

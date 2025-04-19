@@ -432,8 +432,8 @@ class FubukiServer(
             return rp
         }
 
-        return offlinePlayers.computeIfAbsent(id) {
-            FubukiOfflinePlayer(GameProfile(id, ""), this)
+        return FubukiOfflinePlayer(GameProfile(id, ""), this).also {
+            offlinePlayers[it.uniqueId] = it
         }
     }
 
@@ -476,9 +476,14 @@ class FubukiServer(
         TODO("Not yet implemented")
     }
 
-    override fun getOperators(): MutableSet<OfflinePlayer> {
-        TODO("Not yet implemented")
-    }
+    override fun getOperators(): MutableSet<OfflinePlayer> =
+        nativeServer.playerManager.opList.values().mapNotNull {
+            it.key?.let {
+                FubukiOfflinePlayer(it, this).also {
+                    offlinePlayers[it.uniqueId] = it
+                }
+            }
+        }.toMutableSet()
 
     override fun getDefaultGameMode(): GameMode = nativeServer.defaultGameMode.toBukkit()
 

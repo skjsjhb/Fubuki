@@ -14,3 +14,9 @@ accessible method net/minecraft/server/command/ReloadCommand findNewDataPacks (L
 accessible field net/minecraft/entity/player/HungerManager exhaustion F
 mutable field net/minecraft/entity/player/HungerManager exhaustion F
 accessible method net/minecraft/text/TextColor <init> (ILjava/lang/String;)V
+accessible method net/minecraft/entity/Entity setFlag (IZ)V
+accessible field net/minecraft/entity/Entity GLIDING_FLAG_INDEX I
+accessible field net/minecraft/entity/LivingEntity USING_RIPTIDE_FLAG I
+accessible field net/minecraft/entity/Entity hasVisualFire Z
+mutable field net/minecraft/entity/Entity hasVisualFire Z
+accessible method net/minecraft/server/ServerConfigEntry getKey ()Ljava/lang/Object;
